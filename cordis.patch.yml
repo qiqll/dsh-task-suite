@@ -1,0 +1,7 @@
+# dsh-task-suite: task pool + scheduler + background worker harness.
+# The row is inserted by the plugin loader; config is optional and defaults are
+# applied in code (stateDir: .dsh/tasks, testTimeoutSec: 900, mode: auto).
+- insert:
+    - id: dsh-task-suite
+      name: 'dsh-task-suite'
+      config: {}

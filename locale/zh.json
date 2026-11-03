@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Task Suite",
+    "description": "任务池、调度器与后台 worker：初始化、录入、排期、自动循环、机器验收与测试回归比对。"
+  }
+}

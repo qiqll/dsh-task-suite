@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Task Suite",
+    "description": "Task pool, scheduler, and background workers: init, capture, plan, auto-loop, machine acceptance, and regression baselining."
+  }
+}

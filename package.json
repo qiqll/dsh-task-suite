@@ -1,0 +1,58 @@
+{
+  "name": "dsh-task-suite",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Task pool, scheduler, background worker, and machine acceptance for DeepSeek Harness: file-based task state, subagent delivery, snapshot or git acceptance, and a task-loop dispatcher.",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "lib/*.js",
+    "skills/*.md",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "assets/*.png",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "task-management",
+    "task-queue",
+    "subagent",
+    "workflow",
+    "automation",
+    "orchestration"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiqll/dsh-task-suite.git"
+  },
+  "homepage": "https://github.com/qiqll/dsh-task-suite#readme",
+  "bugs": {
+    "url": "https://github.com/qiqll/dsh-task-suite/issues"
+  },
+  "license": "MIT",
+  "author": "qiqll",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node selftest.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
