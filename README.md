@@ -8,18 +8,18 @@
 
 ## 安装
 
-从 npm：
+从 GitHub 源码安装（当前推荐）：
+
+```sh
+dsh plugin add qiqll/dsh-task-suite
+```
+
+npm 包发布后也可以直接按包名安装：
 
 ```sh
 dsh plugin add dsh-task-suite
 # 或指定 profile
 dsh plugin --profile web add dsh-task-suite
-```
-
-直接从 GitHub 源码安装：
-
-```sh
-dsh plugin add qiqll/dsh-task-suite
 ```
 
 桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。首次安装后工具与三个 skill（`task-admin` / `task-loop` / `task-worker`）自动注册，无需重启。
