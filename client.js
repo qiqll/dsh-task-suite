@@ -291,57 +291,66 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots', 'betterSidebar'],
+      inject: ['slots'],
       apply(ctx) {
-        const register = () => ctx.betterSidebar.registerTab({
-          id: 'dsh-task-suite:dashboard',
-          title: () => '任务流水线',
-          description: () => '任务池、worker、门禁与运行指标',
-          icon: size => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', 'aria-hidden': true },
-            h('path', { d: 'M4 6h6M14 6h6M4 12h16M4 18h6M14 18h6', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' }),
-            h('circle', { cx: 11, cy: 6, r: 1.5, fill: 'currentColor' }),
-            h('circle', { cx: 13, cy: 18, r: 1.5, fill: 'currentColor' })),
-          order: 40,
-          single: true,
-          component: Dashboard,
-        })
-        ctx.effect(register, 'dsh-task-suite: dashboard tab')
+        ctx.effect(() => ctx.inject(['betterSidebar'], (injected) => {
+          const betterSidebar = injected.get?.('betterSidebar')
+          if (!betterSidebar?.registerTab) return
+          const tabDisposer = betterSidebar.registerTab({
+            id: 'dsh-task-suite:dashboard',
+            title: () => '任务流水线',
+            description: () => '任务池、worker、门禁与运行指标',
+            icon: size => h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', 'aria-hidden': true },
+              h('path', { d: 'M4 6h6M14 6h6M4 12h16M4 18h6M14 18h6', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' }),
+              h('circle', { cx: 11, cy: 6, r: 1.5, fill: 'currentColor' }),
+              h('circle', { cx: 13, cy: 18, r: 1.5, fill: 'currentColor' })),
+            order: 40,
+            single: true,
+            component: Dashboard,
+          })
 
-        const Launcher = () => h('button', {
-          type: 'button',
-          title: '打开任务流水线',
-          onClick: () => {
-            try { ctx.betterSidebar.openTab({ type: 'dsh-task-suite:dashboard' }) } catch {}
+          const Launcher = () => h('button', {
+            type: 'button',
+            title: '打开任务流水线',
+            onClick: () => {
+              try { betterSidebar.openTab({ type: 'dsh-task-suite:dashboard' }) } catch {}
+            },
+            style: {
+              position: 'fixed',
+              right: 14,
+              bottom: 14,
+              zIndex: 70,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid var(--dsw-alias-border-l2)',
+              background: 'var(--dsw-alias-bg-layer-1)',
+              color: 'var(--dsw-alias-label-primary)',
+              boxShadow: '0 2px 10px rgba(0,0,0,.12)',
+              cursor: 'pointer',
+              font: '12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              pointerEvents: 'auto',
+            },
           },
-          style: {
-            position: 'fixed',
-            right: 14,
-            bottom: 14,
-            zIndex: 70,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '6px 10px',
-            borderRadius: 999,
-            border: '1px solid var(--dsw-alias-border-l2)',
-            background: 'var(--dsw-alias-bg-layer-1)',
-            color: 'var(--dsw-alias-label-primary)',
-            boxShadow: '0 2px 10px rgba(0,0,0,.12)',
-            cursor: 'pointer',
-            font: '12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-            pointerEvents: 'auto',
-          },
-        },
-          h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', 'aria-hidden': true },
-            h('path', { d: 'M4 6h6M14 6h6M4 12h16M4 18h6M14 18h6', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' }),
-            h('circle', { cx: 11, cy: 6, r: 1.5, fill: 'currentColor' }),
-            h('circle', { cx: 13, cy: 18, r: 1.5, fill: 'currentColor' })),
-          '任务流水线')
-        ctx.effect(() => ctx.slots.inject('shell.overlay', () => ctx.slots.register({
-          name: 'shell.overlay',
-          id: 'dsh-task-suite:launcher',
-          order: 60,
-        }, Launcher)), 'dsh-task-suite: dashboard launcher')
+            h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', 'aria-hidden': true },
+              h('path', { d: 'M4 6h6M14 6h6M4 12h16M4 18h6M14 18h6', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' }),
+              h('circle', { cx: 11, cy: 6, r: 1.5, fill: 'currentColor' }),
+              h('circle', { cx: 13, cy: 18, r: 1.5, fill: 'currentColor' })),
+            '任务流水线')
+
+          const launcherDisposer = ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+            name: 'shell.overlay',
+            id: 'dsh-task-suite:launcher',
+            order: 60,
+          }, Launcher))
+
+          return () => {
+            try { launcherDisposer?.() } catch {}
+            try { tabDisposer?.() } catch {}
+          }
+        }), 'dsh-task-suite: dashboard surface')
       },
     }
   },
