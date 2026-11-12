@@ -10,7 +10,7 @@
 
 中文名：**DSH 任务流水线**。插件现在带一个只读的 Web 仪表盘，把任务池、当前 worker、门禁和运行指标集中到右侧栏。
 
-安装并刷新页面后，有两种打开方式：
+安装后**第一次需要完全退出并重新打开 DSH**（Web 客户端插件表在进程启动时组合，只刷新页面不够），之后进入任意会话，有两种打开方式：
 
 - 右下角浮动按钮 **任务流水线**（首次使用最直接）；
 - 右侧栏顶部的 **+** 菜单 → **任务流水线**。
@@ -24,7 +24,7 @@
 - **Agent**：主 agent 与当前子 agent 的活动状态；
 - **最近流水**：运行日志里的 claim / done / confirm / reject / stop。
 
-UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)。没有安装时任务工具仍然可用，只是没有这个面板；安装后重启或刷新 DSH Web 页面即可。
+UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)。没有安装时任务工具仍然可用，只是没有这个面板；安装后第一次需要完全重启 DSH；之后刷新页面即可。
 
 数据来自插件注册的只读接口 `GET /dsh-task-suite/state?sessionId=…&cwd=…`，不会修改任务池。
 
