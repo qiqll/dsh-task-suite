@@ -43,32 +43,34 @@ export const name = 'dsh-task-suite'
 export const inject = ['tools', 'skills', 'systemPrompt', 'workingDirectory']
 
 function registerDashboard(ctx, config) {
-  const webServer = ctx.get?.('webServer')
-  if (!webServer?.register) return
-  const handler = async (req, res) => {
-    const url = new URL(req.url || '/', 'http://localhost')
-    const send = (status, body) => {
-      res.writeHead(status, {
-        'content-type': 'application/json; charset=utf-8',
-        'cache-control': 'no-store',
-      })
-      res.end(JSON.stringify(body))
+  ctx.effect(() => ctx.inject(['webServer'], (injected) => {
+    const webServer = injected.get('webServer')
+    if (!webServer?.register) return
+    const handler = async (req, res) => {
+      const url = new URL(req.url || '/', 'http://localhost')
+      const send = (status, body) => {
+        res.writeHead(status, {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+        })
+        res.end(JSON.stringify(body))
+      }
+      if (req.method !== 'GET') return send(405, { ok: false, error: 'method not allowed' })
+      try {
+        const sessionId = url.searchParams.get('sessionId') || ''
+        const requestedCwd = url.searchParams.get('cwd') || ''
+        const cwd = await resolveDashboardCwd(ctx, sessionId, requestedCwd, config)
+        const state = await buildDashboard({ cwd, config, sessionId, ctx })
+        send(200, { ok: true, ...state })
+      } catch (error) {
+        send(500, { ok: false, error: String(error?.message ?? error) })
+      }
     }
-    if (req.method !== 'GET') return send(405, { ok: false, error: 'method not allowed' })
-    try {
-      const sessionId = url.searchParams.get('sessionId') || ''
-      const requestedCwd = url.searchParams.get('cwd') || ''
-      const cwd = await resolveDashboardCwd(ctx, sessionId, requestedCwd, config)
-      const state = await buildDashboard({ cwd, config, sessionId, ctx })
-      send(200, { ok: true, ...state })
-    } catch (error) {
-      send(500, { ok: false, error: String(error?.message ?? error) })
-    }
-  }
-  ctx.effect(() => webServer.register({
-    kind: 'exact',
-    path: '/dsh-task-suite/state',
-    handler,
+    return webServer.register({
+      kind: 'exact',
+      path: '/dsh-task-suite/state',
+      handler,
+    })
   }), 'dsh-task-suite: dashboard route')
 }
 
