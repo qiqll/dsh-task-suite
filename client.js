@@ -161,9 +161,13 @@ window.__ModuleLoader__.load({
           try {
             const url = `/dsh-task-suite/state?sessionId=${encodeURIComponent(sessionId)}&cwd=${encodeURIComponent(cwd)}`
             const response = await fetch(url, { cache: 'no-store' })
-            const body = await response.json()
+            const text = await response.text()
             if (!alive) return
-            if (!response.ok || !body.ok) throw new Error(body.error || `HTTP ${response.status}`)
+            let body = null
+            try { body = text ? JSON.parse(text) : null } catch {}
+            if (!response.ok || !body?.ok) {
+              throw new Error(body?.error || `接口返回 HTTP ${response.status}${text ? `：${text.slice(0, 160)}` : '（空响应）'}`)
+            }
             setState(body)
             setError(null)
           } catch (err) {
