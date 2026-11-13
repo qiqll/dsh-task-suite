@@ -1,32 +1,38 @@
 # DSH Task Suite
 
-把 Claude 的 `task-*` 任务体系移植到 DeepSeek Harness 的本地插件：**一份任务池 + 一套状态机 + 主会话调度 + 后台 worker + 机器验收**。
+**DSH 任务流水线：让主 Agent 只调度，后台 subagent 干活，交付前机器重跑测试。**
 
-主 agent 负责和需求方对话、排期、派活、验收；后台 `subagent` 在全新上下文里完成单个任务并输出结构化报告。任务池是磁盘上的 Markdown，需求方可以直接看、直接改。
+把 Claude 的 `task-*` 任务体系移植到 DeepSeek Harness：一份 Markdown 任务池、一套状态机、主会话调度、后台 worker、机器验收，以及一个只读的可视化面板。
 
-**git 不是必需**：在 git 仓库里用 commit/worktree 验收；在普通目录自动降级为「文件快照模式」，用快照 + 文件清单完成基线比对、改动归属、测试改弱审计和回滚。
+它不是又一个 todo list。它解决的是「AI 说完成了，但没人验证」的问题：
 
-## Web 任务流水线
+- **任务池在磁盘上**：`.dsh/tasks/*.md`，人可以直接看、直接改，不锁在某个数据库里。
+- **主 Agent 不自己埋头做**：只负责和需求方对话、排期、派活、验收。
+- **后台 subagent 独立交付**：每个任务在全新上下文里完成，避免长会话污染。
+- **机器验收**：重跑项目测试、比对开工基线、审计测试是否被改弱，不采信 worker 的自述。
+- **git 可选**：git 仓库用 commit/worktree 验收；普通目录自动降级为文件快照模式。
 
-中文名：**DSH 任务流水线**。插件现在带一个只读的 Web 仪表盘，把任务池、当前 worker、门禁和运行指标集中到右侧栏。
+| 维度 | 普通任务列表 | DSH 任务流水线 |
+|---|---|---|
+| 谁干活 | 主 Agent 自己做 | 后台 subagent，独立上下文 |
+| 验收 | 人工看报告 | 机器重跑测试 + 改动归属 |
+| 存储 | 依赖 git/数据库 | Markdown 文件，git 可选 |
+| 可视化 | 简单列表 | 任务 / Agent / 指标 / 事件流 |
+| 适用 | 个人 todo | 多任务连续交付 |
 
-安装后**第一次需要完全退出并重新打开 DSH**（Web 客户端插件表在进程启动时组合，只刷新页面不够），之后进入任意会话，有两种打开方式：
+## 60 秒上手
 
-- 右下角浮动按钮 **任务流水线**（首次使用最直接）；
-- 右侧栏顶部的 **+** 菜单 → **任务流水线**。
+```text
+task_init
+task_add items=[{title: "给登录接口加限流", module: "backend", priority: "P1", acceptance: "pytest tests/test_auth.py 通过"}]
+task_loop action=start max=3 hours=2
+task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
+# subagent 交付后：task_accept report="<报告块>" → task_confirm
+```
 
-面板每 5 秒刷新，包含：
+然后从右侧栏 `+` 菜单或右下角 **任务流水线** 打开面板，看任务从「待开始」走到「待验证」。
 
-- **循环状态**：运行中 / 已停止 / 已叫停 / 空闲；
-- **当前任务**：`T-xxx`、阶段、worker、已运行时间、快照/基线、门禁备注、inbox 数量；
-- **指标**：完成率、一次通过率、7 日吞吐、中位周期（CLAIM → CONFIRM）、WIP、待验证；
-- **任务清单**：按状态筛选，点开看备注/依赖/验收标准；
-- **Agent**：主 agent 与当前子 agent 的活动状态；
-- **最近流水**：运行日志里的 claim / done / confirm / reject / stop。
-
-UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)。没有安装时任务工具仍然可用，只是没有这个面板；安装后第一次需要完全重启 DSH；之后刷新页面即可。
-
-数据来自插件注册的只读接口 `GET /dsh-task-suite/state?sessionId=…&cwd=…`，不会修改任务池。
+> 截图占位：`docs/screenshots/dashboard.png`（发布前补录；当前先用文字说明）
 
 ## 安装
 
@@ -44,9 +50,33 @@ dsh plugin add dsh-task-suite
 dsh plugin --profile web add dsh-task-suite
 ```
 
-桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。首次安装后工具与三个 skill（`task-admin` / `task-loop` / `task-worker`）自动注册，无需重启。
+桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。
 
-本地开发时把本目录 `link:` 到 profile 的依赖里即可；修改代码后禁用/启用该插件行即可热重载。
+**首次安装后必须完整退出并重新打开 DSH。** Web 客户端插件表在进程启动时组合，只刷新页面不会加载新插件的客户端部分；Host 工具和任务池不受影响。之后进入任意会话即可使用。
+
+本地开发时把本目录 `link:` 到 profile 的依赖里；Host 代码可禁用/启用插件行热重载，客户端 UI 改动仍需重启一次。
+
+## Web 任务流水线
+
+中文名：**DSH 任务流水线**。插件带一个只读面板，把任务池、当前 worker、门禁和运行指标集中到右侧栏。
+
+打开方式（进入任意会话后）：
+
+- 右下角浮动按钮 **任务流水线**（最直接）；
+- 右侧栏顶部的 **+** 菜单 → **任务流水线**。
+
+面板每 5 秒刷新，包含：
+
+- **循环状态**：运行中 / 已停止 / 已叫停 / 空闲；
+- **当前任务**：`T-xxx`、阶段、worker、已运行时间、快照/基线、门禁备注、inbox 数量；
+- **指标**：完成率、一次通过率、7 日吞吐、中位周期（CLAIM → CONFIRM）、WIP、待验证；
+- **任务清单**：按状态筛选，点开看备注/依赖/验收标准；
+- **Agent**：主 agent 与当前子 agent 的活动状态；
+- **最近流水**：运行日志里的 claim / done / confirm / reject / stop。
+
+UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)，但它是**软依赖**：没有安装时任务工具、API、任务池全部正常，只是没有这个面板；Web 也不会因此启动失败。
+
+数据来自插件注册的只读接口 `GET /dsh-task-suite/state?sessionId=…&cwd=…`，不会修改任务池。
 
 ## 插件市场
 
@@ -224,7 +254,7 @@ BRIEF:
   `schedule_create` 定时提醒主会话 `tick`。
 - 机器验收在原 `verify_tests.sh` / `check_test_weakening.sh` 的基础上重写为
   Node 实现，判定口径保持一致。
-- 不提供 Web 任务板；`backlog.md` 就是看板。
+- 提供只读 Web 面板；`backlog.md` 仍是任务池的唯一事实来源。
 
 ## 开发自测
 
