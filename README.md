@@ -39,15 +39,16 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 从 GitHub 源码安装（当前推荐）：
 
 ```sh
-dsh plugin add qiqll/dsh-task-suite
+dsh plugin --profile desktop add qiqll/dsh-task-suite
 ```
+
+> `--profile` 必填：桌面版通常是 `desktop`，Web 版是 `web`；换成你实际使用的 profile 名。
 
 npm 包发布后也可以直接按包名安装：
 
 ```sh
-dsh plugin add dsh-task-suite
-# 或指定 profile
-dsh plugin --profile web add dsh-task-suite
+dsh plugin --profile desktop add dsh-task-suite
+# Web profile 用 --profile web
 ```
 
 桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。

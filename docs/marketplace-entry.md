@@ -28,7 +28,7 @@
 |---|---|
 | 名称 | `dsh-task-suite` / **DSH 任务流水线** |
 | 版本 | `1.1.0` |
-| 安装 | `dsh plugin add qiqll/dsh-task-suite` |
+| 安装 | `dsh plugin --profile desktop add qiqll/dsh-task-suite` |
 | 分类 | task management / orchestration / subagent |
 | 平台 | Host + Web（Web 面板需 Better Sidebar） |
 | 关键词 | `dsh-plugin`, `deepseek-harness`, `task-management`, `task-queue`, `subagent`, `workflow`, `automation`, `orchestration` |

@@ -23,7 +23,7 @@
 ## 安装
 
 ```sh
-dsh plugin add qiqll/dsh-task-suite
+dsh plugin --profile desktop add qiqll/dsh-task-suite
 ```
 
 首次安装后**完整退出并重新打开 DSH**；之后进入任意会话，从右侧栏 `+` 菜单或右下角 **任务流水线** 打开。
