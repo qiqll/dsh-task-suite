@@ -36,7 +36,7 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 
 > 上图是流程示意。下面是从真实会话截取的任务流水线面板：
 
-![任务流水线面板：任务、Agent、指标、事件流](docs/screenshots/dashboard-overview.png)
+<img src="docs/screenshots/dashboard-overview.png" width="620" alt="任务流水线面板：任务、Agent、指标、事件流">
 
 > 面板包含任务池、Agent、指标和事件流；截图已裁掉本地工作区路径。更多状态截图待补录，规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
 
