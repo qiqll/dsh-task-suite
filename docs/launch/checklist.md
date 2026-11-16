@@ -8,7 +8,8 @@
 - [x] Release Notes 安装命令带 `--profile`
 - [x] 市场 PR #15404 已提交
 - [ ] 市场 PR 已合并
-- [ ] 3 张真实面板截图（overview / running / verify）
+- [x] `dashboard-overview.png` 真实面板截图（已裁掉本地路径）
+- [ ] `dashboard-running.png` / `dashboard-verify.png`
 - [ ] 60 秒 GIF 或短视频
 - [ ] 截图中无 API Key、token、私人路径、真实项目名
 - [ ] 演示任务数据是虚构的，且不包含公司/客户信息
