@@ -34,7 +34,7 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 
 ![DSH 任务流水线：主 Agent 调度、后台 Worker 执行、机器验收](docs/screenshots/pipeline-overview.png)
 
-> 上图是流水线示意；真实只读面板截图收录在 `docs/screenshots/`（Windows/macOS 浏览器均可打开）。
+> 上图是流水线示意；真实只读面板截图待补录，拍摄规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
 
 ## 安装
 
