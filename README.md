@@ -32,7 +32,9 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 
 然后从右侧栏 `+` 菜单或右下角 **任务流水线** 打开面板，看任务从「待开始」走到「待验证」。
 
-> 截图占位：`docs/screenshots/dashboard.png`（发布前补录；当前先用文字说明）
+![DSH 任务流水线：主 Agent 调度、后台 Worker 执行、机器验收](docs/screenshots/pipeline-overview.png)
+
+> 上图是流水线示意；真实只读面板截图收录在 `docs/screenshots/`（Windows/macOS 浏览器均可打开）。
 
 ## 安装
 

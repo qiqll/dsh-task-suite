@@ -22,7 +22,11 @@
 
 ## 安装
 
+npm：https://www.npmjs.com/package/dsh-task-suite
+
 ```sh
+dsh plugin --profile desktop add dsh-task-suite
+# 或从 GitHub 源码
 dsh plugin --profile desktop add qiqll/dsh-task-suite
 ```
 
