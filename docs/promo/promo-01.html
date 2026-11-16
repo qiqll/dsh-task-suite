@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DSH Task Suite — 自评 vs 机器验收</title>
+<style>
+  :root{
+    --bg:#070d18; --bg2:#0b1424; --panel:#0e1728; --panel2:#111d31;
+    --line:#223148; --text:#f4f8fc; --muted:#93a4bb; --dim:#64748b;
+    --cyan:#22d3ee; --green:#34d399; --red:#fb7185; --violet:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1200px;height:1600px;overflow:hidden}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .poster{position:relative;width:1200px;height:1600px;padding:64px 64px 52px;display:flex;flex-direction:column;overflow:hidden}
+  .bg{position:absolute;inset:0;background:
+    radial-gradient(900px 600px at 12% 4%, rgba(34,211,238,.16), transparent 60%),
+    radial-gradient(900px 700px at 96% 22%, rgba(167,139,250,.14), transparent 65%),
+    linear-gradient(150deg,#070d18 0%,#0a1322 50%,#070c16 100%);
+  }
+  .bg:after{content:"";position:absolute;inset:0;background-image:
+    linear-gradient(rgba(148,163,184,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(148,163,184,.08) 1px,transparent 1px);
+    background-size:48px 48px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),transparent 75%);
+  }
+  .top{position:relative;z-index:2}
+  .eyebrow{display:flex;align-items:center;gap:12px;color:#67e8f9;font-size:13px;font-weight:700;letter-spacing:2.6px}
+  .eyebrow:before{content:"";width:30px;height:2px;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+  h1{margin-top:24px;font-size:66px;line-height:1.12;font-weight:800;letter-spacing:-1.5px}
+  h1 .line2{display:block;color:#67e8f9;background:linear-gradient(90deg,#67e8f9,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .dek{margin-top:20px;color:var(--muted);font-size:20px;line-height:1.55}
+  .dek b{color:#dbeafe;font-weight:650}
+  .compare{position:relative;z-index:2;display:flex;align-items:stretch;gap:22px;height:742px;margin-top:34px}
+  .card{
+    flex:1;min-width:0;border:1px solid var(--line);border-radius:24px;padding:28px 26px;
+    display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);
+  }
+  .card.bad{background:linear-gradient(180deg,rgba(251,113,133,.10),rgba(14,23,40,.92) 42%);border-color:rgba(251,113,133,.34)}
+  .card.good{background:linear-gradient(180deg,rgba(52,211,153,.11),rgba(14,23,40,.92) 42%);border-color:rgba(52,211,153,.34)}
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:750;letter-spacing:.2px}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 5px rgba(251,113,133,.12)}
+  .good .dot{background:var(--green);box-shadow:0 0 0 5px rgba(52,211,153,.12)}
+  .badge{font-size:11px;font-weight:750;letter-spacing:1.4px;padding:7px 10px;border-radius:7px;white-space:nowrap}
+  .bad .badge{color:#fecdd3;background:rgba(251,113,133,.14);border:1px solid rgba(251,113,133,.28)}
+  .good .badge{color:#bbf7d0;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.28)}
+  .chat{margin-top:24px;border:1px solid rgba(148,163,184,.16);border-radius:14px;padding:16px 18px;background:rgba(2,6,23,.42);font-size:21px;line-height:1.45}
+  .chat .who{display:block;color:var(--dim);font-size:11px;letter-spacing:1.2px;margin-bottom:7px}
+  .bad .chat{color:#fecdd3}
+  .good .chat{color:#bbf7d0}
+  .claims{list-style:none;display:flex;flex-direction:column;gap:0;margin-top:16px}
+  .claim{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 2px;border-bottom:1px solid rgba(148,163,184,.13);font-size:17px;color:#cbd5e1}
+  .claim:last-child{border-bottom:0}
+  .claim .state{font-size:15px;font-weight:700;white-space:nowrap}
+  .bad .claim .state{color:#fda4af}
+  .good .claim .state{color:#6ee7b7}
+  .mark{display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;border-radius:50%;margin-right:9px;font-size:12px;flex:0 0 auto}
+  .bad .mark{background:rgba(251,113,133,.15);color:#fb7185;border:1px solid rgba(251,113,133,.3)}
+  .good .mark{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+  .claim-text{display:flex;align-items:center;min-width:0;line-height:1.35}
+  .verdict{margin-top:auto;padding:14px 16px;border-radius:12px;font-size:16px;font-weight:700;line-height:1.4}
+  .bad .verdict{color:#fecdd3;background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.2)}
+  .good .verdict{color:#d1fae5;background:rgba(52,211,153,.11);border:1px solid rgba(52,211,153,.24)}
+  .vs{width:54px;flex:0 0 54px;display:flex;align-items:center;justify-content:center}
+  .vs span{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(148,163,184,.26);background:rgba(15,23,42,.75);color:#cbd5e1;font-size:15px;font-weight:800;letter-spacing:1px}
+  .tail{position:relative;z-index:2;margin-top:28px}
+  .quote{font-size:31px;line-height:1.35;font-weight:750;letter-spacing:-.3px}
+  .quote span{color:#67e8f9;background:linear-gradient(90deg,#67e8f9,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .chip{font-size:13px;color:#cbd5e1;border:1px solid rgba(148,163,184,.2);background:rgba(15,23,42,.55);padding:8px 12px;border-radius:999px;letter-spacing:.2px}
+  .install{margin-top:22px;border:1px solid rgba(34,211,238,.25);background:rgba(34,211,238,.06);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .install .label{color:#67e8f9;font-size:11px;font-weight:750;letter-spacing:1.6px;white-space:nowrap}
+  .install code{color:#e2e8f0;font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:14px;white-space:nowrap}
+  .site{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:20px;border-top:1px solid rgba(148,163,184,.14);color:#64748b;font-size:13px;letter-spacing:.3px}
+  .site b{color:#94a3b8;font-weight:600}
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="bg"></div>
+  <div class="top">
+    <div class="eyebrow">DSH TASK SUITE · 01</div>
+    <h1>AI 说“做完了”<span class="line2">这次终于有人验收</span></h1>
+    <p class="dek">普通 Agent 的自评，和一套<b>机器验收流程</b>的差别。</p>
+  </div>
+
+  <div class="compare">
+    <div class="card bad">
+      <div class="card-top">
+        <div class="brand"><span class="dot"></span>普通 Agent</div>
+        <span class="badge">自评</span>
+      </div>
+      <div class="chat"><span class="who">WORKER · 最后一条消息</span>“已完成，测试通过 ✅”</div>
+      <ul class="claims">
+        <li class="claim"><span class="claim-text"><span class="mark">×</span>测试真的跑了吗？</span><span class="state">不知道</span></li>
+        <li class="claim"><span class="claim-text"><span class="mark">×</span>改动越界了吗？</span><span class="state">没查</span></li>
+        <li class="claim"><span class="claim-text"><span class="mark">×</span>测试被改弱了吗？</span><span class="state">没审</span></li>
+        <li class="claim"><span class="claim-text"><span class="mark">×</span>能回滚吗？</span><span class="state">看运气</span></li>
+      </ul>
+      <div class="verdict">完成 = 它自己的判断</div>
+    </div>
+
+    <div class="vs"><span>VS</span></div>
+
+    <div class="card good">
+      <div class="card-top">
+        <div class="brand"><span class="dot"></span>DSH 任务流水线</div>
+        <span class="badge">机器验收</span>
+      </div>
+      <div class="chat"><span class="who">WORKER · 交付报告 + 证据</span>“T-101 已交付，请验收。”</div>
+      <ul class="claims">
+        <li class="claim"><span class="claim-text"><span class="mark">✓</span>重跑项目测试</span><span class="state">通过</span></li>
+        <li class="claim"><span class="claim-text"><span class="mark">✓</span>基线 worktree 比对</span><span class="state">通过</span></li>
+        <li class="claim"><span class="claim-text"><span class="mark">✓</span>测试改弱审计</span><span class="state">通过</span></li>
+        <li class="claim"><span class="claim-text"><span class="mark">✓</span>越界 / 归属检查</span><span class="state">通过</span></li>
+      </ul>
+      <div class="verdict">通过 → 待验证 → 人确认归档</div>
+    </div>
+  </div>
+
+  <div class="tail">
+    <div class="quote">“完成”不是 worker 的自述，<span>是机器复跑出来的证据。</span></div>
+    <div class="chips">
+      <span class="chip">Markdown 任务池</span>
+      <span class="chip">主 Agent 只调度</span>
+      <span class="chip">后台 subagent 独立交付</span>
+      <span class="chip">git 可选</span>
+      <span class="chip">只读面板</span>
+    </div>
+    <div class="install">
+      <span class="label">INSTALL</span>
+      <code>dsh plugin --profile desktop add dsh-task-suite</code>
+    </div>
+    <div class="site"><b>github.com/qiqll/dsh-task-suite</b><span>DSH 任务流水线 · 1.1.0</span></div>
+  </div>
+</div>
+</body>
+</html>

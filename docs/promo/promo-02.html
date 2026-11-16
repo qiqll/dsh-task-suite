@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DSH Task Suite — 一条任务，四道关</title>
+<style>
+  :root{
+    --bg:#070d18; --panel:#0e1728; --panel2:#101c30; --line:#223148;
+    --text:#f4f8fc; --muted:#93a4bb; --dim:#64748b;
+    --cyan:#22d3ee; --green:#34d399; --violet:#a78bfa; --amber:#fbbf24; --pink:#f472b6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1200px;height:1600px;overflow:hidden}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  .poster{position:relative;width:1200px;height:1600px;padding:64px;display:flex;flex-direction:column;overflow:hidden}
+  .bg{position:absolute;inset:0;background:
+    radial-gradient(900px 620px at 18% 0%, rgba(34,211,238,.16), transparent 62%),
+    radial-gradient(780px 600px at 100% 34%, rgba(167,139,250,.14), transparent 65%),
+    linear-gradient(160deg,#070d18 0%,#0a1322 55%,#070c16 100%);
+  }
+  .bg:after{content:"";position:absolute;inset:0;background-image:
+    linear-gradient(rgba(148,163,184,.075) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(148,163,184,.075) 1px,transparent 1px);
+    background-size:48px 48px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 92%);
+  }
+  .ghost{position:absolute;right:-20px;bottom:210px;font-size:320px;line-height:1;font-weight:900;color:rgba(148,163,184,.035);letter-spacing:-18px;z-index:0;user-select:none}
+  .top{position:relative;z-index:2}
+  .eyebrow{display:flex;align-items:center;gap:12px;color:#67e8f9;font-size:13px;font-weight:700;letter-spacing:2.6px}
+  .eyebrow:before{content:"";width:30px;height:2px;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+  h1{margin-top:24px;font-size:68px;line-height:1.05;font-weight:800;letter-spacing:-2px}
+  h1 span{color:#67e8f9;background:linear-gradient(90deg,#67e8f9,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .dek{margin-top:18px;color:var(--muted);font-size:19px;line-height:1.5}
+  .flow{position:relative;z-index:2;display:flex;flex-direction:column;gap:16px;margin-top:30px}
+  .rail{position:absolute;left:57px;top:52px;bottom:52px;width:2px;background:linear-gradient(180deg,rgba(34,211,238,.3),rgba(167,139,250,.28),rgba(52,211,153,.3));z-index:0}
+  .step{position:relative;z-index:1;display:flex;align-items:flex-start;gap:22px;height:204px;padding:23px 26px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(110deg,rgba(17,29,49,.94),rgba(11,20,36,.9));box-shadow:0 18px 50px rgba(0,0,0,.32);overflow:hidden}
+  .step:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .num{width:64px;height:64px;flex:0 0 64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#0a1424;border:2px solid var(--accent);color:var(--accent);font-size:18px;font-weight:850;letter-spacing:.5px;box-shadow:0 0 0 7px rgba(7,13,24,.9)}
+  .icon{width:54px;height:54px;flex:0 0 54px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(148,163,184,.07);border:1px solid rgba(148,163,184,.14);color:var(--accent);margin-top:4px}
+  .content{flex:1;min-width:0;padding-top:1px}
+  .kicker{font-size:10px;font-weight:800;letter-spacing:1.8px;color:var(--accent);opacity:.95}
+  h3{margin-top:7px;font-size:25px;line-height:1.2;font-weight:750;letter-spacing:-.2px}
+  p{margin-top:7px;color:#a9b8cb;font-size:15px;line-height:1.45}
+  .artifact{margin-top:10px;display:inline-flex;align-items:center;gap:8px;color:#cbd5e1;font-size:12px;border:1px solid rgba(148,163,184,.18);background:rgba(2,6,23,.35);padding:6px 9px;border-radius:6px;font-family:"SFMono-Regular",Menlo,Consolas,monospace;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .artifact b{color:var(--accent);font-family:inherit;font-weight:750}
+  .checks{display:flex;gap:6px;margin-top:10px;flex-wrap:nowrap}
+  .check{font-size:11px;color:#a7f3d0;border:1px solid rgba(52,211,153,.24);background:rgba(52,211,153,.07);padding:5px 7px;border-radius:5px;white-space:nowrap}
+  .checks .check:before{content:"✓ ";color:#34d399;font-weight:800}
+  .step[data-accent="cyan"]{--accent:#22d3ee}
+  .step[data-accent="violet"]{--accent:#a78bfa}
+  .step[data-accent="green"]{--accent:#34d399}
+  .step[data-accent="amber"]{--accent:#fbbf24}
+  .claim{position:relative;z-index:2;margin-top:26px;font-size:31px;line-height:1.35;font-weight:750;letter-spacing:-.4px}
+  .claim span{color:#67e8f9;background:linear-gradient(90deg,#67e8f9,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;position:relative;z-index:2}
+  .chip{font-size:13px;color:#cbd5e1;border:1px solid rgba(148,163,184,.2);background:rgba(15,23,42,.55);padding:7px 11px;border-radius:999px}
+  .install{position:relative;z-index:2;margin-top:18px;border:1px solid rgba(34,211,238,.25);background:rgba(34,211,238,.06);border-radius:12px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .install .label{color:#67e8f9;font-size:11px;font-weight:750;letter-spacing:1.6px;white-space:nowrap}
+  .install code{color:#e2e8f0;font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:14px;white-space:nowrap}
+  .site{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:18px;border-top:1px solid rgba(148,163,184,.14);color:#64748b;font-size:13px}
+  .site b{color:#94a3b8;font-weight:600}
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="bg"></div><div class="ghost">04</div>
+
+  <div class="top">
+    <div class="eyebrow">DSH TASK SUITE · 02</div>
+    <h1>一条任务，<span>四道关</span></h1>
+    <p class="dek">从“收到需求”到“可以归档”，每一步都留下证据。</p>
+  </div>
+
+  <div class="flow">
+    <div class="rail"></div>
+
+    <div class="step" data-accent="cyan">
+      <div class="num">01</div>
+      <div class="icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="5" width="16" height="11" rx="3"/><path d="M7 16l-1 4 5-4"/><rect x="12" y="12" width="13" height="10" rx="3"/><path d="M16 18h5M16 21h3"/>
+        </svg>
+      </div>
+      <div class="content">
+        <div class="kicker">CONVERSATION</div>
+        <h3>主 Agent 拆任务</h3>
+        <p>需求方只和主 Agent 对话。拆优先级、定验收标准，不把上下文耗在实现里。</p>
+        <div class="artifact"><b>task_add</b> → 3 tasks · P1 · backend</div>
+      </div>
+    </div>
+
+    <div class="step" data-accent="violet">
+      <div class="num">02</div>
+      <div class="icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="4" y="3" width="15" height="15" rx="3"/><path d="M8 8h7M8 12h5"/><path d="M13 19l3 3 6-7"/><path d="M18 7h6v6"/>
+        </svg>
+      </div>
+      <div class="content">
+        <div class="kicker">INDEPENDENT WORKER</div>
+        <h3>后台 subagent 独立交付</h3>
+        <p>全新上下文，只做一个任务：定向、判断风险、实施、跑测试、提交或快照。</p>
+        <div class="artifact"><b>worker-T-101</b> · clean context · one task</div>
+      </div>
+    </div>
+
+    <div class="step" data-accent="green">
+      <div class="num">03</div>
+      <div class="icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M14 3l10 4v6c0 6-4 10-10 12C8 23 4 19 4 13V7l10-4z"/><path d="M9 14l3.2 3.2L19 10"/>
+        </svg>
+      </div>
+      <div class="content">
+        <div class="kicker">MACHINE GATE</div>
+        <h3>机器验收，不采信自述</h3>
+        <p>重跑测试、比对开工基线、审计测试是否被改弱，再查归属与越界文件。</p>
+        <div class="checks"><span class="check">重跑测试</span><span class="check">基线比对</span><span class="check">改弱审计</span><span class="check">越界检查</span></div>
+      </div>
+    </div>
+
+    <div class="step" data-accent="amber">
+      <div class="num">04</div>
+      <div class="icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="14" cy="9" r="4.5"/><path d="M5 25c0-5 4-8 9-8s9 3 9 8"/><path d="M19 18l2.5 2.5L26 16"/>
+        </svg>
+      </div>
+      <div class="content">
+        <div class="kicker">HUMAN CONFIRM</div>
+        <h3>通过，才进入待验证</h3>
+        <p>机器通过不等于自动归档。需求方确认后，任务才从「待验证」进入「已完成」。</p>
+        <div class="artifact"><b>task_accept</b> → <b>task_confirm</b> · 人做最后决定</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="claim">主 Agent 只调度，<span>不自己写业务代码。</span></div>
+  <div class="chips">
+    <span class="chip">任务池 = .dsh/tasks/*.md</span>
+    <span class="chip">git 可选 / 文件快照</span>
+    <span class="chip">后台 worker 隔离上下文</span>
+    <span class="chip">只读面板</span>
+  </div>
+  <div class="install">
+    <span class="label">INSTALL</span>
+    <code>dsh plugin --profile desktop add dsh-task-suite</code>
+  </div>
+  <div class="site"><b>github.com/qiqll/dsh-task-suite</b><span>DSH 任务流水线 · 1.1.0</span></div>
+</div>
+</body>
+</html>

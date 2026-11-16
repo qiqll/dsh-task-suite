@@ -40,6 +40,8 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 
 > 面板包含任务池、Agent、指标和事件流；截图已裁掉本地工作区路径。更多状态截图待补录，规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
 
+> 宣传画：[自评 vs 机器验收](docs/promo/promo-01.png) · [一条任务，四道关](docs/promo/promo-02.png)
+
 ## 安装
 
 从 GitHub 源码安装（当前推荐）：

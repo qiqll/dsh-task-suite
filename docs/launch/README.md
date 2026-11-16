@@ -12,6 +12,7 @@
 | [`checklist.md`](checklist.md) | 发布前检查、发布顺序、发布后 48 小时动作 |
 | [`../demo.md`](../demo.md) | 60 秒演示脚本与镜头清单 |
 | [`../screenshots/README.md`](../screenshots/README.md) | 面板截图规范与文件命名 |
+| [`../promo/README.md`](../promo/README.md) | 两张宣传画与可编辑 HTML 源文件 |
 
 ## 一句话定位
 
