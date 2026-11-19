@@ -1,8 +1,10 @@
 # 中文首发文案
 
+> 最新统一口径见 [`positioning.md`](positioning.md)；本文件保留长文素材，标题和结构以 positioning 为准。
+
 ## 标题备选
 
-1. 我把 Claude 的任务流水线搬进了 DeepSeek Harness：主 Agent 只调度，后台 Agent 干活
+1. 把 Agent 从助理变成一支工程团队：主 Agent 只调度，后台 Agent 交付
 2. AI 说“做完了”，这次终于有人验收了
 3. 别再让 coding agent 自己给自己打分：一套可验收的任务流水线
 
