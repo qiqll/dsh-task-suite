@@ -7,7 +7,7 @@
 | 文件 | 状态 | 内容 |
 |---|---|---|
 | `dashboard-overview.png` | 已有 | 真实面板：任务池、Agent、指标、事件流；1130×1505，已裁掉工作区路径 |
-| `dashboard-running.png` | 待录 | 有 1 个「进行中」任务，Agent 行显示 worker，事件流有派发记录 |
+| `dashboard-running.png` | 已有 | 真实 T-009 运行中：当前任务、worker、指标、事件流；1128×1536，无本地路径 |
 | `dashboard-verify.png` | 待录 | 有 1 个「待验证」任务，显示验收通过/待确认 |
 | `dashboard.gif` | 可选 | 60 秒演示，见 `docs/demo.md` |
 

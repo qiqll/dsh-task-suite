@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSH 任务流水线 — 把 Agent 从助理变成一支工程团队</title>
+<meta name="description" content="主 Agent 只调度，后台 Agent 交付，机器验收后才算完成。把需求变成可验收的任务，把交互变成异步，把进度变成一屏可见。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="把 Agent 从助理，变成一支工程团队">
+<meta property="og:description" content="主 Agent 只调度，后台 Agent 交付，机器验收后才算完成。">
+<meta property="og:image" content="https://qiqll.github.io/dsh-task-suite/og.png">
+<meta property="og:url" content="https://qiqll.github.io/dsh-task-suite/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon.svg">
+<style>
+  :root{
+    --bg:#060b15; --bg2:#0a1322; --panel:#0e1728; --panel2:#111d31;
+    --line:#223148; --text:#f4f8fc; --muted:#93a4bb; --dim:#64748b;
+    --cyan:#22d3ee; --green:#34d399; --violet:#a78bfa; --amber:#fbbf24; --red:#fb7185;
+    --w:1120px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+    background-image:
+      radial-gradient(900px 600px at 8% -10%,rgba(34,211,238,.14),transparent 60%),
+      radial-gradient(900px 700px at 100% 18%,rgba(167,139,250,.12),transparent 65%),
+      linear-gradient(160deg,#060b15 0%,#0a1322 55%,#060a12 100%);
+    background-attachment:fixed;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;height:auto;display:block}
+  .wrap{width:min(var(--w),calc(100% - 48px));margin:0 auto}
+  .nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:rgba(6,11,21,.72);border-bottom:1px solid rgba(148,163,184,.12)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;gap:18px;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.2px;font-size:15px}
+  .brand-mark{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(34,211,238,.2),rgba(167,139,250,.2));border:1px solid rgba(34,211,238,.35);color:#67e8f9;font-size:13px}
+  .nav-links{display:flex;align-items:center;gap:22px;color:#a9b8cb;font-size:13px}
+  .nav-links a:hover{color:#fff}
+  .nav-cta{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(34,211,238,.35);background:rgba(34,211,238,.08);color:#cffafe;padding:8px 12px;border-radius:8px;font-weight:650}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:10px;padding:13px 18px;font-weight:700;font-size:14px;border:1px solid transparent;transition:.18s ease;cursor:pointer}
+  .btn-primary{background:linear-gradient(135deg,#22d3ee,#34d399);color:#03121a;box-shadow:0 12px 30px rgba(34,211,238,.2)}
+  .btn-primary:hover{transform:translateY(-1px);filter:brightness(1.04)}
+  .btn-ghost{background:rgba(15,23,42,.6);border-color:rgba(148,163,184,.26);color:#dbeafe}
+  .btn-ghost:hover{border-color:rgba(34,211,238,.45);color:#fff}
+  .hero{padding:78px 0 44px}
+  .hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:48px;align-items:center}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;color:#67e8f9;font-size:11px;font-weight:800;letter-spacing:2.2px}
+  .eyebrow:before{content:"";width:26px;height:2px;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+  h1{margin:22px 0 0;font-size:clamp(42px,5.2vw,68px);line-height:1.07;letter-spacing:-2.4px;font-weight:850}
+  h1 .grad{background:linear-gradient(90deg,#67e8f9,#a78bfa 58%,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero-sub{margin:22px 0 0;max-width:640px;color:#a9b8cb;font-size:17px;line-height:1.7}
+  .hero-sub strong{color:#e2e8f0;font-weight:650}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+  .install{display:flex;align-items:center;gap:10px;margin-top:22px;border:1px solid rgba(34,211,238,.22);background:rgba(34,211,238,.055);border-radius:10px;padding:10px 12px;max-width:620px}
+  .install code{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:13px;color:#dbeafe;overflow:auto;white-space:nowrap;flex:1;padding:2px 0}
+  .copy{border:1px solid rgba(148,163,184,.24);background:rgba(15,23,42,.7);color:#cbd5e1;border-radius:7px;padding:7px 10px;font-size:11px;font-weight:650;cursor:pointer;white-space:nowrap}
+  .copy:hover{border-color:rgba(34,211,238,.5);color:#fff}
+  .hero-note{margin-top:12px;color:#64748b;font-size:12px}
+  .hero-art{position:relative}
+  .art-frame{position:relative;border:1px solid rgba(34,211,238,.2);border-radius:18px;overflow:hidden;background:#0b1424;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .art-frame img{width:100%}
+  .art-glow{position:absolute;inset:-40px;background:radial-gradient(360px 260px at 70% 20%,rgba(34,211,238,.18),transparent 70%);filter:blur(12px);z-index:-1}
+  .art-tag{position:absolute;left:16px;bottom:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-size:10px;font-weight:750;letter-spacing:.8px;padding:6px 9px;border-radius:6px;border:1px solid rgba(148,163,184,.22);background:rgba(2,6,23,.72);color:#cbd5e1}
+  .tag.on{color:#a7f3d0;border-color:rgba(52,211,153,.34);background:rgba(6,78,59,.45)}
+  .trust{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;color:#94a3b8;font-size:12px}
+  .trust span{border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.5);padding:6px 9px;border-radius:999px}
+  .band{padding:72px 0;border-top:1px solid rgba(148,163,184,.11)}
+  .band-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:34px}
+  .kicker{color:#67e8f9;font-size:11px;font-weight:800;letter-spacing:2.1px}
+  h2{margin:10px 0 0;font-size:clamp(30px,3.2vw,46px);line-height:1.18;letter-spacing:-1.2px;font-weight:800}
+  .band-sub{margin:12px 0 0;color:#93a4bb;font-size:15px;max-width:640px;line-height:1.7}
+  .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .pain{border:1px solid var(--line);background:linear-gradient(180deg,rgba(17,29,49,.9),rgba(10,18,32,.85));border-radius:14px;padding:20px}
+  .pain .q{color:#fda4af;font-size:12px;font-weight:750;letter-spacing:.8px}
+  .pain h3{font-size:20px;line-height:1.3;margin:9px 0 7px;font-weight:750}
+  .pain p{color:#93a4bb;font-size:13px;margin:0;line-height:1.7}
+  .shift-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .shift{position:relative;border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;background:linear-gradient(135deg,rgba(17,29,49,.94),rgba(8,15,29,.9));overflow:hidden}
+  .shift:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .shift .num{font-size:10px;color:var(--accent);font-weight:850;letter-spacing:1.8px}
+  .shift h3{margin:8px 0 7px;font-size:22px;font-weight:800;line-height:1.25}
+  .shift h3 em{font-style:normal;color:var(--accent)}
+  .shift p{margin:0;color:#a9b8cb;font-size:13.5px;line-height:1.7}
+  .bottomline{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:20px;border:1px solid rgba(52,211,153,.32);background:linear-gradient(90deg,rgba(6,78,59,.32),rgba(15,23,42,.55));border-radius:14px;padding:18px 20px}
+  .bottomline .l{display:flex;align-items:center;gap:12px;font-size:14px;color:#a7f3d0;font-weight:700}
+  .bottomline .l b{color:#34d399}
+  .bottomline .r{color:#94a3b8;font-size:12px}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+  .step{border:1px solid var(--line);background:#0b1424;border-radius:14px;padding:18px;position:relative}
+  .step .n{font-size:10px;font-weight:850;letter-spacing:1.5px;color:var(--accent)}
+  .step h3{margin:8px 0 6px;font-size:18px;font-weight:750}
+  .step p{margin:0;color:#93a4bb;font-size:12.5px;line-height:1.65}
+  .step .mini{margin-top:12px;padding-top:10px;border-top:1px solid rgba(148,163,184,.14);color:#64748b;font-size:10.5px;font-family:"SFMono-Regular",Menlo,Consolas,monospace}
+  .arrow{position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:#22d3ee;font-size:16px;z-index:1}
+  .proof-grid{display:grid;grid-template-columns:1fr .92fr;gap:34px;align-items:center}
+  .gate{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:0}
+  .gate li{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid rgba(148,163,184,.12);color:#cbd5e1;font-size:13.5px}
+  .gate li:last-child{border-bottom:0}
+  .gate i{width:20px;height:20px;flex:0 0 20px;border-radius:50%;display:grid;place-items:center;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.35);color:#34d399;font-style:normal;font-size:11px;font-weight:800}
+  .gate small{display:block;color:#64748b;font-size:11px;line-height:1.6;margin-top:3px}
+  .shot{border:1px solid rgba(148,163,184,.2);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+  .shot img{width:100%}
+  .shot-cap{margin-top:9px;color:#64748b;font-size:11px;text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid rgba(148,163,184,.13);vertical-align:top}
+  th{color:#94a3b8;font-size:11px;font-weight:750;letter-spacing:1px;text-transform:uppercase;background:rgba(15,23,42,.45)}
+  td:first-child{color:#cbd5e1;width:25%}
+  .yes{color:#6ee7b7}
+  .no{color:#64748b}
+  .install-box{display:grid;grid-template-columns:1fr .88fr;gap:30px;align-items:start}
+  .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
+  .steps li{display:flex;gap:14px}
+  .steps .sn{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(34,211,238,.4);background:rgba(34,211,238,.08);color:#67e8f9;font-size:11px;font-weight:850}
+  .steps h3{margin:1px 0 5px;font-size:16px}
+  .steps p{margin:0;color:#93a4bb;font-size:12.5px;line-height:1.7}
+  .codebox{border:1px solid rgba(34,211,238,.24);background:rgba(2,6,23,.55);border-radius:12px;padding:14px;margin-top:10px}
+  .codebox code{display:block;font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:12px;line-height:1.8;color:#dbeafe;white-space:pre-wrap;overflow-wrap:anywhere}
+  .muted{color:#64748b;font-size:11.5px;line-height:1.7}
+  details{border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.42);border-radius:10px;padding:13px 15px;margin-bottom:9px}
+  details summary{cursor:pointer;color:#dbeafe;font-size:13.5px;font-weight:650}
+  details p{margin:8px 0 0;color:#93a4bb;font-size:12.5px;line-height:1.7}
+  .cta{padding:72px 0 80px;text-align:center;border-top:1px solid rgba(148,163,184,.12)}
+  .cta h2{margin:0 auto;max-width:760px}
+  .cta p{color:#93a4bb;font-size:14px;margin:14px auto 0;max-width:620px}
+  .cta .hero-actions{justify-content:center}
+  footer{border-top:1px solid rgba(148,163,184,.12);padding:26px 0;color:#64748b;font-size:11.5px}
+  .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}
+  .foot a{color:#94a3b8}
+  .foot a:hover{color:#fff}
+  @media (max-width:900px){
+    .hero{padding-top:52px}
+    .hero-grid,.proof-grid,.install-box{grid-template-columns:1fr}
+    .hero-art{order:-1}
+    .pain-grid,.flow{grid-template-columns:1fr 1fr}
+    .arrow{display:none}
+    .nav-links a:not(.nav-cta){display:none}
+  }
+  @media (max-width:620px){
+    .wrap{width:calc(100% - 34px)}
+    .shift-grid,.pain-grid,.flow{grid-template-columns:1fr}
+    .hero-actions .btn{width:100%}
+    .bottomline{align-items:flex-start;flex-direction:column}
+    .band{padding:52px 0}
+    .band-head{align-items:flex-start;flex-direction:column;gap:12px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top"><span class="brand-mark">▦</span>DSH 任务流水线</a>
+    <div class="nav-links">
+      <a href="#why">为什么</a>
+      <a href="#how">怎么跑</a>
+      <a href="#proof">验收</a>
+      <a href="#install">安装</a>
+      <a class="nav-cta" href="https://github.com/qiqll/dsh-task-suite" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">DSH TASK SUITE · OPEN SOURCE</div>
+      <h1>把 Agent 从“助理”<br><span class="grad">变成一支工程团队</span></h1>
+      <p class="hero-sub">主 Agent 只调度，后台 Agent 交付，<strong>机器验收后才算完成</strong>。需求变成任务，交互变成异步，进度变成一屏可见。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#install">60 秒安装</a>
+        <a class="btn btn-ghost" href="https://github.com/qiqll/dsh-task-suite" target="_blank" rel="noopener">看 GitHub</a>
+        <a class="btn btn-ghost" href="https://www.npmjs.com/package/dsh-task-suite" target="_blank" rel="noopener">npm</a>
+      </div>
+      <div class="install">
+        <code id="cmd">dsh plugin --profile desktop add dsh-task-suite</code>
+        <button class="copy" type="button" onclick="copyCmd(this)">复制</button>
+      </div>
+      <div class="hero-note">首次安装后需完整退出并重新打开 DSH；之后从右侧栏或右下角打开「任务流水线」。</div>
+      <div class="trust">
+        <span>Markdown 任务池</span>
+        <span>git 可选 / 文件快照</span>
+        <span>后台 subagent</span>
+        <span>只读面板</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="art-glow"></div>
+      <div class="art-frame">
+        <img src="assets/pipeline-overview.png" alt="DSH 任务流水线：主 Agent 调度、后台 Worker 执行、机器验收">
+        <div class="art-tag"><span class="tag on">MACHINE VERIFIED</span><span class="tag">HUMAN CONFIRMED</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="band" id="why">
+  <div class="wrap">
+    <div class="band-head">
+      <div>
+        <div class="kicker">THE PROBLEM</div>
+        <h2>你现在的 Agent，<br>更像一个随时待命的助理</h2>
+        <p class="band-sub">不是模型不够聪明，是工作方式还停留在助理模式：你盯、你等、你验收，它负责“说完成”。</p>
+      </div>
+    </div>
+    <div class="pain-grid">
+      <div class="pain"><div class="q">SYNC / 同步</div><h3>你得一直守着</h3><p>它做一件，你看一件；想到下一个需求，也得等它空下来。</p></div>
+      <div class="pain"><div class="q">SELF-REPORT / 自评</div><h3>它说完成，不等于完成</h3><p>测试跑没跑、改动越没越界、测试有没有被改弱，全靠它自己说。</p></div>
+      <div class="pain"><div class="q">BLACK BOX / 黑盒</div><h3>进度只存在于对话里</h3><p>当前在做什么、什么卡住了、还剩多少，翻聊天记录才能猜。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="shift">
+  <div class="wrap">
+    <div class="band-head">
+      <div>
+        <div class="kicker">FOUR SHIFTS</div>
+        <h2>四换，一底线</h2>
+        <p class="band-sub">不是把多 Agent 包装成新概念，而是把“管理一个团队”的最小闭环，做进插件里。</p>
+      </div>
+    </div>
+    <div class="shift-grid">
+      <div class="shift" style="--accent:#22d3ee"><div class="num">01 / TEAM</div><h3>助理 → <em>团队</em></h3><p>主 Agent 负责对话、拆解、调度、验收；每个任务交给独立上下文的 subagent。长任务不再污染主会话。</p></div>
+      <div class="shift" style="--accent:#a78bfa"><div class="num">02 / TASK</div><h3>对话 → <em>任务</em></h3><p>每个需求都有 ID、优先级、验收标准和状态。任务池是可读写的 Markdown，不是锁在数据库里的黑盒。</p></div>
+      <div class="shift" style="--accent:#fbbf24"><div class="num">03 / ASYNC</div><h3>同步 → <em>异步</em></h3><p>需求可以一次投递多条，进入任务池按序消化。你不必和 Agent 保持同频，想到什么先扔进去。</p></div>
+      <div class="shift" style="--accent:#f472b6"><div class="num">04 / CONTROL</div><h3>黑盒 → <em>驾驶舱</em></h3><p>任务、Agent、指标、事件流一屏可见。当前在做什么、什么卡住、什么待确认，一眼看清。</p></div>
+    </div>
+    <div class="bottomline">
+      <div class="l"><b>底线</b> 自述 → 证据：worker 说“完成”不算完成</div>
+      <div class="r">机器重跑测试 · 基线比对 · 测试改弱审计 · 人确认归档</div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how">
+  <div class="wrap">
+    <div class="band-head">
+      <div>
+        <div class="kicker">THE PIPELINE</div>
+        <h2>一条任务，四道关</h2>
+        <p class="band-sub">你投递的是需求，不是 prompt。流水线把它变成一个有证据的交付。</p>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="step" style="--accent:#22d3ee"><div class="n">01 / INTAKE</div><h3>投递</h3><p>主 Agent 把需求拆成任务，写清验收标准、优先级和依赖。</p><div class="mini">task_add · backlog.md</div></div>
+      <div class="step" style="--accent:#a78bfa"><div class="n">02 / DISPATCH</div><h3>调度</h3><p>主 Agent 从池子里挑任务，派给全新上下文的后台 worker。</p><div class="mini">task_loop · task_pick</div><div class="arrow">→</div></div>
+      <div class="step" style="--accent:#f472b6"><div class="n">03 / DELIVER</div><h3>交付</h3><p>worker 定向、实施、跑测试、提交或存快照，返回结构化报告。</p><div class="mini">subagent · commit / snapshot</div><div class="arrow">→</div></div>
+      <div class="step" style="--accent:#34d399"><div class="n">04 / GATE</div><h3>验收</h3><p>机器重跑测试、比对基线、审计改动；通过后待验证，由你确认归档。</p><div class="mini">task_accept · task_confirm</div><div class="arrow">→</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="proof">
+  <div class="wrap proof-grid">
+    <div>
+      <div class="kicker">TRUST LAYER</div>
+      <h2>“完成”不是 worker 的自述，<br>是机器复跑出来的证据</h2>
+      <p class="band-sub">有测试的项目走机器门禁；没有测试的项目也有人工确认和改动审计。最终归档权始终在你手里。</p>
+      <ul class="gate">
+        <li><i>✓</i><span>重跑项目测试<small>在开工基线 worktree 上比对，确认没有新增失败。</small></span></li>
+        <li><i>✓</i><span>审计测试是否被改弱<small>删用例、skip、放宽断言，都会暴露出来。</small></span></li>
+        <li><i>✓</i><span>检查改动归属与越界文件<small>不只信报告，直接看 diff 和提交归属。</small></span></li>
+        <li><i>✓</i><span>人确认后才归档<small>机器通过 → 待验证 → 你确认 → 已完成。</small></span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="shot"><img src="assets/dashboard-running.png" alt="真实任务流水线面板：任务、Agent、指标与事件流"></div>
+      <div class="shot-cap">真实运行面板：T-009 进行中、worker、指标与事件流（截图已裁掉本地路径）</div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="diff">
+  <div class="wrap">
+    <div class="band-head">
+      <div>
+        <div class="kicker">WHY NOT JUST MULTI-AGENT</div>
+        <h2>多 Agent 是手段，<br>不是产品</h2>
+        <p class="band-sub">没有任务契约、验收门禁和可见性，多 Agent 只是把混乱并行化。</p>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>维度</th><th>普通多 Agent / 助理</th><th>DSH 任务流水线</th></tr></thead>
+      <tr><td>工作单位</td><td class="no">一段对话、一个 prompt</td><td class="yes">有 ID、验收标准和状态的任务</td></tr>
+      <tr><td>谁干活</td><td class="no">主 Agent 自己，或临时派发</td><td class="yes">独立上下文的 worker，主 Agent 只调度</td></tr>
+      <tr><td>完成标准</td><td class="no">worker 自己说完成</td><td class="yes">机器重跑测试 + 基线比对 + 人确认</td></tr>
+      <tr><td>交互方式</td><td class="no">同步等待，一次一件</td><td class="yes">需求先入池，按流水线异步消化</td></tr>
+      <tr><td>过程可见</td><td class="no">翻聊天记录</td><td class="yes">任务 / Agent / 指标 / 事件流一屏可见</td></tr>
+      <tr><td>存储</td><td class="no">依赖会话或 SaaS</td><td class="yes">磁盘上的 Markdown，git 可选</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="band" id="install">
+  <div class="wrap">
+    <div class="band-head">
+      <div>
+        <div class="kicker">GET STARTED</div>
+        <h2>60 秒，把团队搭起来</h2>
+        <p class="band-sub">需要已安装 DeepSeek Harness。首次安装后完整重启一次，让客户端面板加载。</p>
+      </div>
+    </div>
+    <div class="install-box">
+      <ol class="steps">
+        <li><span class="sn">1</span><div><h3>安装插件</h3><div class="codebox"><code>dsh plugin --profile desktop add dsh-task-suite</code></div><p class="muted">桌面版 profile 通常是 desktop；Web 版换成 web，或换成你实际使用的 profile 名。</p></div></li>
+        <li><span class="sn">2</span><div><h3>完整重启 DSH</h3><p>退出应用再打开。只刷新页面不会加载客户端面板。</p></div></li>
+        <li><span class="sn">3</span><div><h3>打开任务流水线</h3><p>进入会话，从右侧栏 <b>+</b> 菜单或右下角「任务流水线」打开面板；任务工具会出现在会话里。</p></div></li>
+        <li><span class="sn">4</span><div><h3>投递第一个需求</h3><p>先 <code>task_init</code>，再 <code>task_add</code>，然后 <code>task_loop action=start</code>。完整命令见 GitHub README。</p></div></li>
+      </ol>
+      <div>
+        <div class="codebox"><code># 从 GitHub 源码安装（可选）
+dsh plugin --profile desktop add qiqll/dsh-task-suite
+
+# 已经装过？先看版本
+npm view dsh-task-suite version</code></div>
+        <p class="muted" style="margin-top:12px">npm 页面：<a href="https://www.npmjs.com/package/dsh-task-suite" target="_blank" rel="noopener" style="color:#67e8f9">npmjs.com/package/dsh-task-suite</a><br>插件市场：<a href="https://github.com/awesome-dsh-plugin/awesome-dsh-plugin" target="_blank" rel="noopener" style="color:#67e8f9">awesome-dsh-plugin</a>（条目 PR 合并后生效）<br>GitHub：<a href="https://github.com/qiqll/dsh-task-suite" target="_blank" rel="noopener" style="color:#67e8f9">github.com/qiqll/dsh-task-suite</a></div>
+        <div class="codebox" style="margin-top:16px"><code>task_init
+task_add items=[{title: "给登录接口加限流", module: "backend", priority: "P1", acceptance: "pytest tests/test_auth.py 通过"}]
+task_loop action=start max=3 hours=2
+task_loop action=tick</code></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="fit">
+  <div class="wrap">
+    <div class="band-head">
+      <div><div class="kicker">FIT</div><h2>适合谁，不适合谁</h2></div>
+    </div>
+    <div class="shift-grid">
+      <div class="shift" style="--accent:#34d399"><div class="num">FIT</div><h3>适合</h3><p>同时推进多个任务、被“假完成”坑过、想让交付过程可审计的开发者和小团队；已经在用 DeepSeek Harness。</p></div>
+      <div class="shift" style="--accent:#fb7185"><div class="num">NOT FIT</div><h3>不适合</h3><p>只想要简单 todo、一次性脚本、完全不需要验收的个人项目；或者期待零人工、自动合并上线的团队。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="faq">
+  <div class="wrap">
+    <div class="band-head"><div><div class="kicker">FAQ</div><h2>几个常见问题</h2></div></div>
+    <details><summary>这和普通的 todo / 任务列表有什么区别？</summary><p>普通 todo 只记录“要做什么”；这里记录“谁做、做到什么程度算完成、拿什么证据验收”。任务有状态机、验收标准、机器门禁和归档流程。</p></details>
+    <details><summary>是不是所有任务都能机器验收？</summary><p>不是。能跑测试命令的项目走机器验收；没有测试的项目仍有人工确认、改动审计和文件快照，不会假装“自动通过”。</p></details>
+    <details><summary>任务会并行执行吗？</summary><p>“异步”指需求投递和交互异步：你可以一次投多条，不必等一条做完再提下一条。实际执行由流水线按序调度，默认同一时刻一个当前任务，避免并发写坏工作区。</p></details>
+    <details><summary>必须用 git 吗？</summary><p>不必须。git 仓库用 commit / worktree 做归因和基线；普通目录自动降级为文件快照，任务池和验收流程仍然可用。</p></details>
+    <details><summary>面板是只读的吗？</summary><p>是。面板负责看见，不负责操作；任务操作仍然通过 task_* 工具完成，避免在 UI 上误触状态。</p></details>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <div class="kicker">STOP ASSISTING. START LEADING.</div>
+    <h2>别管 Agent 了，<br>带团队。</h2>
+    <p>一个 Agent 是助理，一支 Agent 团队才是产能。装上，投一个真实任务，看它怎么过机器这一关。</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/qiqll/dsh-task-suite" target="_blank" rel="noopener">GitHub 仓库</a>
+      <a class="btn btn-ghost" href="https://www.npmjs.com/package/dsh-task-suite" target="_blank" rel="noopener">npm 包</a>
+      <a class="btn btn-ghost" href="#install">安装命令</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>DSH 任务流水线 · <span>dsh-task-suite</span> · MIT</div>
+    <div><a href="https://github.com/qiqll/dsh-task-suite">GitHub</a> · <a href="https://www.npmjs.com/package/dsh-task-suite">npm</a> · <a href="https://github.com/awesome-dsh-plugin/awesome-dsh-plugin">插件市场</a></div>
+  </div>
+</footer>
+
+<script>
+function copyCmd(btn){
+  const text = document.getElementById('cmd').textContent.trim();
+  navigator.clipboard?.writeText(text).then(()=>{
+    btn.textContent='已复制'; setTimeout(()=>btn.textContent='复制',1600);
+  }).catch(()=>{
+    const r=document.createRange(); r.selectNodeContents(document.getElementById('cmd'));
+    const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent='已选中';
+  });
+}
+</script>
+</body>
+</html>

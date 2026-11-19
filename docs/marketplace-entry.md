@@ -13,13 +13,13 @@
 ## 新版英文条目
 
 ```markdown
-- [qiqll/dsh-task-suite](https://github.com/qiqll/dsh-task-suite) - Claude-style task pipeline for DeepSeek Harness: a Markdown P0-P3 task pool, a main agent that dispatches one task at a time to a background subagent, machine re-verification before acceptance (re-run tests, baseline comparison, test-weakening audit), git or file-snapshot baselines, and a read-only Web dashboard for tasks, agents, metrics and the live event stream.
+- [qiqll/dsh-task-suite](https://github.com/qiqll/dsh-task-suite) - Turn one DSH agent into a small engineering team: a Markdown task pool, a lead agent that dispatches to isolated background workers, machine-verified acceptance (tests, baseline, test-weakening audit), async intake, and a live dashboard. Git optional. [Landing](https://qiqll.github.io/dsh-task-suite/)
 ```
 
 ## 新版中文条目
 
 ```markdown
-- [qiqll/dsh-task-suite](https://github.com/qiqll/dsh-task-suite) - 把 Claude 的 task 体系搬进 DSH：Markdown 任务池、主 Agent 调度、后台 subagent 交付、机器重跑测试验收；git 和非 git 目录都能用，并带一个只读的可视化任务流水线面板。
+- [qiqll/dsh-task-suite](https://github.com/qiqll/dsh-task-suite) - 把单个 DSH Agent 变成一支工程团队：Markdown 任务池、主 Agent 调度、后台 worker 交付、机器验收；需求可异步投递，附实时面板。git 可选。[介绍页](https://qiqll.github.io/dsh-task-suite/)
 ```
 
 ## 市场卡片信息
@@ -28,7 +28,7 @@
 |---|---|
 | 名称 | `dsh-task-suite` / **DSH 任务流水线** |
 | 版本 | `1.1.0` |
-| 安装 | `dsh plugin --profile desktop add qiqll/dsh-task-suite` |
+| 安装 | `dsh plugin --profile desktop add dsh-task-suite` |
 | 分类 | task management / orchestration / subagent |
 | 平台 | Host + Web（Web 面板需 Better Sidebar） |
 | 关键词 | `dsh-plugin`, `deepseek-harness`, `task-management`, `task-queue`, `subagent`, `workflow`, `automation`, `orchestration` |
@@ -47,7 +47,7 @@
 
 ## PR 步骤
 
-1. 等 GitHub 上 `v1.1.0` 和 npm 包就绪；市场条目会按 `package.json` 版本展示。
+1. GitHub `v1.1.0` 和 npm 已就绪；市场条目按 `package.json` 版本展示。
 2. Fork `awesome-dsh-plugin/awesome-dsh-plugin`，在 `README.md` 中找到 `qiqll/dsh-task-suite` 那一行。
 3. 用上面的“新版英文条目”整行替换旧行；中文版可作为 PR 描述，不必同时放进 README。
 4. 提交信息：`docs: update dsh-task-suite entry for 1.1.0`。
@@ -59,5 +59,6 @@
 - [ ] GitHub 仓库 `main` 已是 1.1.0，且打了 `v1.1.0` tag
 - [ ] `npm view dsh-task-suite version` 返回 `1.1.0`
 - [ ] Release Notes 链接可访问
-- [ ] 市场条目描述不再只讲文件任务池
+- [ ] 市场条目描述包含“团队化 + 任务池 + 机器验收 + 面板”
+- [ ] 市场条目和 README 都指向介绍页
 - [ ] 至少有一张真实面板截图

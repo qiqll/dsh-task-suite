@@ -1,24 +1,51 @@
-# DSH Task Suite
+# DSH 任务流水线
 
-**DSH 任务流水线：让主 Agent 只调度，后台 subagent 干活，交付前机器重跑测试。**
+**把 Agent 从“助理”变成一支工程团队。**
+
+> 主 Agent 只调度，后台 Agent 交付，机器验收后才算完成。
+
+[![npm](https://img.shields.io/npm/v/dsh-task-suite?color=22d3ee)](https://www.npmjs.com/package/dsh-task-suite)
+[![License: MIT](https://img.shields.io/badge/license-MIT-34d399.svg)](LICENSE)
+[![DSH plugin](https://img.shields.io/badge/DeepSeek%20Harness-plugin-a78bfa)](https://github.com/qiqll/dsh-task-suite)
+
+[**介绍页**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [插件市场](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) · [Release 1.1.0](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.0)
 
 把 Claude 的 `task-*` 任务体系移植到 DeepSeek Harness：一份 Markdown 任务池、一套状态机、主会话调度、后台 worker、机器验收，以及一个只读的可视化面板。
 
-它不是又一个 todo list。它解决的是「AI 说完成了，但没人验证」的问题：
+它不是又一个 todo list。它解决的是「AI 说完成了，但没人验证」的问题。
 
-- **任务池在磁盘上**：`.dsh/tasks/*.md`，人可以直接看、直接改，不锁在某个数据库里。
-- **主 Agent 不自己埋头做**：只负责和需求方对话、排期、派活、验收。
-- **后台 subagent 独立交付**：每个任务在全新上下文里完成，避免长会话污染。
-- **机器验收**：重跑项目测试、比对开工基线、审计测试是否被改弱，不采信 worker 的自述。
-- **git 可选**：git 仓库用 commit/worktree 验收；普通目录自动降级为文件快照模式。
+## 你现在的 Agent，更像一个随时待命的助理
 
-| 维度 | 普通任务列表 | DSH 任务流水线 |
+- **同步**：它做一件，你看一件；想到下一个需求，也得等它空下来。
+- **自评**：测试跑没跑、改动越没越界、测试有没有被改弱，全靠它自己说。
+- **黑盒**：当前在做什么、什么卡住了、还剩多少，翻聊天记录才能猜。
+
+不是模型不够聪明，是工作方式还停留在助理模式。真正稀缺的不是模型能力，是**管理能力**。
+
+## 四换，一底线
+
+| # | 从 | 到 | 解释 |
+|---|---|---|---|
+| 01 | 助理 | **团队** | 主 Agent 负责对话、拆解、调度、验收；具体工作交给独立上下文的 subagent。 |
+| 02 | 对话 | **任务** | 每个需求都有 ID、优先级、验收标准、状态和依赖；按工程交付，不按聊天记录。 |
+| 03 | 同步 | **异步** | 需求可以一次投递多条，进入任务池按序消化；你不必守着对话等它做完一件再提下一件。 |
+| 04 | 黑盒 | **驾驶舱** | 任务、Agent、指标、事件流一屏可见；当前在做什么、什么卡住、什么待确认，一目了然。 |
+| — | 自述 | **证据** | **底线**：worker 说“完成”不算完成；机器重跑测试、比对基线、审计测试改弱，人再做最后确认。 |
+
+> “异步”指需求投递与交互异步：你可以连续投递，不必等一条结束；实际执行由流水线按序调度，默认同一时刻一个当前任务，避免并发写坏工作区。
+
+## 和普通多 Agent / 任务列表的区别
+
+| 维度 | 普通多 Agent / 简单 todo | DSH 任务流水线 |
 |---|---|---|
-| 谁干活 | 主 Agent 自己做 | 后台 subagent，独立上下文 |
-| 验收 | 人工看报告 | 机器重跑测试 + 改动归属 |
-| 存储 | 依赖 git/数据库 | Markdown 文件，git 可选 |
-| 可视化 | 简单列表 | 任务 / Agent / 指标 / 事件流 |
-| 适用 | 个人 todo | 多任务连续交付 |
+| 工作单位 | 一段对话、一个 prompt | 有 ID、验收标准和状态的任务 |
+| 谁干活 | 主 Agent 自己，或临时派发 | 独立上下文的 worker，主 Agent 只调度 |
+| 完成标准 | worker 自己说完成 | 机器重跑测试 + 基线比对 + 人确认 |
+| 交互方式 | 同步等待，一次一件 | 需求先入池，按流水线异步消化 |
+| 过程可见 | 翻聊天记录 | 任务 / Agent / 指标 / 事件流 |
+| 存储 | 依赖 git / 数据库 / SaaS | 磁盘上的 Markdown，git 可选 |
+
+**多 Agent 是手段，不是产品。** 没有任务契约、验收门禁和可见性，多 Agent 只是把混乱并行化。
 
 ## 60 秒上手
 
@@ -36,28 +63,28 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 
 > 上图是流程示意。下面是从真实会话截取的任务流水线面板：
 
-<img src="docs/screenshots/dashboard-overview.png" width="620" alt="任务流水线面板：任务、Agent、指标、事件流">
+<img src="docs/screenshots/dashboard-running.png" width="620" alt="任务流水线面板：T-009 运行中、worker、指标与事件流">
 
-> 面板包含任务池、Agent、指标和事件流；截图已裁掉本地工作区路径。更多状态截图待补录，规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
+> 面板包含任务池、Agent、指标和事件流；截图来自真实运行中的 T-009，已裁掉本地工作区路径。待验证状态截图仍待补录，规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
 
 > 宣传画：[自评 vs 机器验收](docs/promo/promo-01.png) · [一条任务，四道关](docs/promo/promo-02.png)
 
 ## 安装
 
-从 GitHub 源码安装（当前推荐）：
+npm 安装（推荐）：
+
+```sh
+dsh plugin --profile desktop add dsh-task-suite
+# Web profile 用 --profile web
+```
+
+也可以从 GitHub 源码安装：
 
 ```sh
 dsh plugin --profile desktop add qiqll/dsh-task-suite
 ```
 
 > `--profile` 必填：桌面版通常是 `desktop`，Web 版是 `web`；换成你实际使用的 profile 名。
-
-npm 包发布后也可以直接按包名安装：
-
-```sh
-dsh plugin --profile desktop add dsh-task-suite
-# Web profile 用 --profile web
-```
 
 桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。
 
