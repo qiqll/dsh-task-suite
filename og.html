@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{background:#060b15;color:#f4f8fc;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  .card{position:relative;width:1200px;height:630px;overflow:hidden;background:
+    radial-gradient(700px 500px at 10% 0%,rgba(34,211,238,.22),transparent 62%),
+    radial-gradient(700px 520px at 100% 32%,rgba(167,139,250,.18),transparent 65%),
+    linear-gradient(145deg,#060b15,#0b1627 55%,#060a12)}
+  .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 85%)}
+  .content{position:relative;z-index:2;padding:56px 60px;display:grid;grid-template-columns:1.05fr .95fr;gap:50px;height:100%}
+  .eyebrow{display:flex;align-items:center;gap:10px;color:#67e8f9;font-size:12px;font-weight:800;letter-spacing:2.4px}
+  .eyebrow:before{content:"";width:28px;height:2px;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+  h1{margin-top:20px;font-size:58px;line-height:1.12;letter-spacing:-2.2px;font-weight:850}
+  h1 .grad{background:linear-gradient(90deg,#67e8f9,#a78bfa 60%,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  p{margin-top:18px;color:#a9b8cb;font-size:17px;line-height:1.6;max-width:560px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .chip{font-size:11px;color:#cbd5e1;border:1px solid rgba(148,163,184,.2);background:rgba(15,23,42,.55);padding:7px 10px;border-radius:999px}
+  .url{position:absolute;left:60px;bottom:38px;color:#64748b;font-size:13px;letter-spacing:.4px}
+  .url b{color:#94a3b8;font-weight:650}
+  .right{position:relative;display:flex;flex-direction:column;justify-content:center;gap:12px}
+  .step{display:flex;align-items:center;gap:14px;border:1px solid rgba(148,163,184,.2);background:linear-gradient(110deg,rgba(17,29,49,.92),rgba(8,15,29,.9));border-radius:12px;padding:14px 16px}
+  .n{width:32px;height:32px;flex:0 0 32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent);font-size:12px;font-weight:850}
+  .step h3{font-size:16px;font-weight:750;margin:0}
+  .step p{font-size:11px;color:#93a4bb;margin:3px 0 0;line-height:1.45;max-width:none}
+  .gate{display:flex;align-items:center;gap:10px;margin-top:8px;border:1px solid rgba(52,211,153,.3);background:rgba(6,78,59,.28);border-radius:10px;padding:12px 14px;color:#a7f3d0;font-size:12px;font-weight:700}
+  .gate i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:#34d399;font-style:normal;font-size:11px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="grid"></div>
+  <div class="content">
+    <div>
+      <div class="eyebrow">DSH TASK SUITE · OPEN SOURCE</div>
+      <h1>把 Agent 从“助理”<br><span class="grad">变成一支工程团队</span></h1>
+      <p>主 Agent 只调度，后台 Agent 交付，机器验收后才算完成。</p>
+      <div class="chips"><span class="chip">Markdown 任务池</span><span class="chip">异步投递</span><span class="chip">机器验收</span><span class="chip">实时面板</span></div>
+    </div>
+    <div class="right">
+      <div class="step" style="--accent:#22d3ee"><span class="n">01</span><div><h3>投递</h3><p>需求拆成有验收标准的任务</p></div></div>
+      <div class="step" style="--accent:#a78bfa"><span class="n">02</span><div><h3>调度</h3><p>主 Agent 派给独立后台 worker</p></div></div>
+      <div class="step" style="--accent:#f472b6"><span class="n">03</span><div><h3>交付</h3><p>实施、测试、提交或快照</p></div></div>
+      <div class="step" style="--accent:#34d399"><span class="n">04</span><div><h3>验收</h3><p>机器复跑，人确认归档</p></div></div>
+      <div class="gate"><i>✓</i>不采信 worker 自述，只认证据</div>
+    </div>
+  </div>
+  <div class="url"><b>github.com/qiqll/dsh-task-suite</b> · dsh plugin --profile desktop add dsh-task-suite</div>
+</div>
+</body>
+</html>
