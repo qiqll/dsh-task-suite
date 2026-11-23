@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-34d399.svg)](LICENSE)
 [![DSH plugin](https://img.shields.io/badge/DeepSeek%20Harness-plugin-a78bfa)](https://github.com/qiqll/dsh-task-suite)
 
-[**介绍页**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [插件市场](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) · [Release 1.1.0](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.0)
+[**介绍页**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [插件市场](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) · [Release 1.1.1](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.1)
 
 把 Claude 的 `task-*` 任务体系移植到 DeepSeek Harness：一份 Markdown 任务池、一套状态机、主会话调度、后台 worker、机器验收，以及一个只读的可视化面板。
 

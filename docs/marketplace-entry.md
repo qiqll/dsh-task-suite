@@ -1,4 +1,4 @@
-# Plugin marketplace entry — 1.1.0
+# Plugin marketplace entry — 1.1.1
 
 用于更新 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 的收录条目。先改本文件并评审，确认后再向市场仓库提 PR。
 
@@ -27,7 +27,7 @@
 | 字段 | 值 |
 |---|---|
 | 名称 | `dsh-task-suite` / **DSH 任务流水线** |
-| 版本 | `1.1.0` |
+| 版本 | `1.1.1` |
 | 安装 | `dsh plugin --profile desktop add dsh-task-suite` |
 | 分类 | task management / orchestration / subagent |
 | 平台 | Host + Web（Web 面板需 Better Sidebar） |
@@ -47,17 +47,17 @@
 
 ## PR 步骤
 
-1. GitHub `v1.1.0` 和 npm 已就绪；市场条目按 `package.json` 版本展示。
+1. GitHub `v1.1.1` 和 npm 已就绪；市场条目按 `package.json` 版本展示。
 2. Fork `awesome-dsh-plugin/awesome-dsh-plugin`，在 `README.md` 中找到 `qiqll/dsh-task-suite` 那一行。
 3. 用上面的“新版英文条目”整行替换旧行；中文版可作为 PR 描述，不必同时放进 README。
-4. 提交信息：`docs: update dsh-task-suite entry for 1.1.0`。
-5. 提 PR，标题：`Update dsh-task-suite entry for 1.1.0`；描述里附 1–2 张截图和 release 链接。
+4. 提交信息：`docs: update dsh-task-suite entry for 1.1.1`。
+5. 提 PR，标题：`Update dsh-task-suite entry for 1.1.1`；描述里附 1–2 张截图和 release 链接。
 6. PR 合并后，回到 DSH 插件市场刷新缓存/重启客户端，确认条目描述和版本。
 
 ## 发布前检查
 
-- [ ] GitHub 仓库 `main` 已是 1.1.0，且打了 `v1.1.0` tag
-- [ ] `npm view dsh-task-suite version` 返回 `1.1.0`
+- [ ] GitHub 仓库 `main` 已是 1.1.1，且打了 `v1.1.1` tag
+- [ ] `npm view dsh-task-suite version` 返回 `1.1.1`
 - [ ] Release Notes 链接可访问
 - [ ] 市场条目描述包含“团队化 + 任务池 + 机器验收 + 面板”
 - [ ] 市场条目和 README 都指向介绍页

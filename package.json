@@ -1,6 +1,6 @@
 {
   "name": "dsh-task-suite",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Task pool, scheduler, background worker, machine acceptance, and a Web dashboard for DeepSeek Harness.",
   "main": "index.js",
