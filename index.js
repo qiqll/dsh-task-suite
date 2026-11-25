@@ -37,7 +37,7 @@ const PROMPT_SECTION = `## 任务系统（Task Suite）
 - 手动一单一单做 / 确认或打回 → 加载 skill \`task-admin\`。
 - 问「进度 / 还有什么没做」 → \`task_status\`。
 - 不要把任务池运行状态当业务代码提交：\`.dsh/tasks/auto/\` 与 inbox 是运行时状态（\`task_init\` 会加入 .gitignore）。
-- 待办池空了就报空，**不要自己发明需求**；任务只有「待验证」经需求方确认后才归档为「已完成」。`
+- 待办池空了就报空，**不要自己发明需求**；「待验证」的关闭方式（需求方确认 / 自动验收 / 超时默认通过）都记在 dev-progress.md，打回已归档任务会重开。`
 
 export const name = 'dsh-task-suite'
 export const inject = ['tools', 'skills', 'systemPrompt', 'workingDirectory']

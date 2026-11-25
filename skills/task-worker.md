@@ -43,6 +43,7 @@
 ## Step 3: 实施
 
 - **范围收敛**：只做本任务。顺手发现的问题不要顺手修 —— 写进报告 `DERIVED`（最多 3 条，只收 Medium 及以上遗留或确证的同类缺陷，不收风格建议）。
+  - 衍生的任务默认记 **P3「AI 衍生 P3，只录不做」**，不会自动派发；只有你在报告里标了 `级别 安全 High` / `级别 安全 Critical` **且** `来源` 是 reviewer finding（如 `review H1`），才会按不高于父任务的优先级入队。安全例外要用 reviewer 的原话，不要自己升级。
 - git 模式：每完成一个逻辑单元就 commit（只 add 自己改的文件），message 带任务 ID。
 - 文件模式：直接改文件，不 commit；最后用 `git diff` 以外的普通文件比对自查改动清单。
 - 项目若维护 `current-sprint.md` / `module-spec-registry.md` 等，按需更新对应条目（只改片段）。
@@ -74,10 +75,11 @@ TEST_CHANGES: <对既有测试的每一处修改及理由；只新增用例填�
 GATE: code-reviewer <发现概要>；已修 <…>；跳过 <… + 理由>；security-analyst <…或 未涉及>
 ACCEPTANCE: <验收标准>（来源：backlog | AI 拟定）
 ASSUMPTIONS: <自行做的选择；无填 —>
+VERIFY: <怎么验：≤3 步，用 → 连接；第一步是可运行命令或 URL；不要分号>
 DECISION: <NEEDS_DECISION 时：问题 / 选项A（推荐）代价 / 选项B 代价；否则 —>
 BLOCKER: <BLOCKED / BASELINE_RED / FAILED 时的原因与需要的动作；否则 —>
 DERIVED:
-- [P2] <一句话任务> | 涉及文件 <路径> | 来源 <review M1 / 同类缺陷 / …>
+- [P2] <一句话任务> | 涉及文件 <路径> | 来源 <review M1 / 同类缺陷 / …> | 级别 <安全 High | 安全 Critical | 一般>
 （没有填 —；最多 3 条）
 BRIEF:
 <给需求方看的简报：做了什么、改了哪些文件、请你怎么验证。5–10 行>

@@ -1,9 +1,12 @@
 {
   "name": "dsh-task-suite",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "module",
   "description": "Task pool, scheduler, background worker, machine acceptance, and a Web dashboard for DeepSeek Harness.",
   "main": "index.js",
+  "bin": {
+    "dsh-task": "bin/dsh-task"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -14,6 +17,7 @@
   "files": [
     "index.js",
     "client.js",
+    "bin/*",
     "lib/*.js",
     "skills/*.md",
     "cordis.patch.yml",
@@ -67,5 +71,45 @@
       ]
     },
     "manifestVersion": 1
+  },
+  "dshWorkshop": {
+    "schema": "omdsh-workshop-package/v1",
+    "type": "plugin",
+    "integration": {
+      "protocol": "harness-profile",
+      "artifact": "cordis.patch.yml"
+    },
+    "install": {
+      "mode": "transactional",
+      "adapter": "profile-bundle",
+      "failurePolicy": "generation-rollback",
+      "touchesCurrentBeforeActivation": false
+    },
+    "lifecycle": {
+      "activation": "restart-profile",
+      "dispose": "unknown"
+    },
+    "permissions": [
+      "filesystem:workspace",
+      "process:spawn",
+      "git:read-write"
+    ],
+    "compatibility": {
+      "dshVersions": [
+        "0.2.1-rc.5"
+      ]
+    },
+    "capability": {
+      "id": "task_status",
+      "kind": "tool",
+      "invocation": "在任意会话调用 task_status 工具（空任务池）",
+      "expected": "返回任务池全局视图：0 条任务、无待决策/阻塞，并给出下一步建议"
+    },
+    "evidence": {
+      "install": null,
+      "failureIsolation": null,
+      "hotReload": null,
+      "remove": null
+    }
   }
 }

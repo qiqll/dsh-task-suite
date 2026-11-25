@@ -1,0 +1,530 @@
+#!/usr/bin/env node
+/**
+ * dsh-task — DeepSeek Harness 任务池终端命令。
+ *
+ * 对齐 claude-task 的 qtask：在任意终端查看任务池、答复「待决策 / 阻塞」、确认「待验证」。
+ * 与 qtask 的区别是直接读写项目下的 .dsh/tasks/ 文件（不经过 inbox），复用 lib/ 的解析与
+ * 状态机函数，只把持久化替换成「临时文件 + rename」的原子写，并在写后回读校验。
+ */
+
+import { writeFile, rename, mkdir, rm, mkdtemp, readdir } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { fileURLToPath } from 'node:url'
+
+import { TaskStore } from '../lib/store.js'
+import { buildStatusReport, answerTask, confirmTask, addTasks, addDecision } from '../lib/tasks.js'
+import { parseBacklog, renderBacklog, STATUS } from '../lib/markdown.js'
+import { exists, isDir, readText, runProcess, cell } from '../lib/util.js'
+
+const CLI_PATH = fileURLToPath(import.meta.url)
+const STATE_DIR = '.dsh/tasks'
+
+const HELP = `dsh-task — DeepSeek Harness 任务池终端命令（对齐 claude-task 的 qtask）
+
+用法：
+  dsh-task [-C <目录>] --status
+  dsh-task [-C <目录>] -d <T-001[,T-002…]> "答复内容"
+  dsh-task [-C <目录>] --pass [T-001 T-002 …] [--except T-003[,T-004…]]
+  dsh-task --selftest
+  dsh-task -h | --help
+
+动作：
+  --status              打印任务池概览：各优先级 / 状态计数、进行中、待验证、待决策、阻塞、下一步建议
+  -d, --decision <ID…>  给「待决策 / 阻塞」任务写答复，任务回到「待开始」；ID 逗号分隔可一次写多个
+  --pass [ID…]          确认「待验证」通过并归档到 dev-progress.md（不写 ID = 全部待验证任务）
+  --except <ID…>        与 --pass 搭配使用，排除指定 ID；可重复，逗号分隔
+  --selftest            在临时目录造最小任务池自检，不触碰真实 .dsh/tasks/
+  -h, --help            显示本帮助
+
+选项：
+  -C, --dir <目录>      指定项目目录；默认从当前目录向上查找 .dsh/tasks/backlog.md
+  --                    其后的参数全部按答复内容 / ID 处理（内容以 - 开头时用）
+
+示例：
+  dsh-task --status
+  dsh-task -d T-016 "方案 B，按 qtask 语义实现"
+  dsh-task -d T-7,t-9 "通过，可以合入"
+  dsh-task --pass
+  dsh-task --pass T-016 T-017 --except T-017
+  cd /path/to/repo && node dsh-task-suite/bin/dsh-task --status
+
+任务池状态机：
+  待开始 ──► 进行中 ──► 待验证 ──► 已完成
+     │          │          │
+     └──► 已取消 └──► 阻塞  └──► 打回（验证不通过，回到进行中）
+
+  -d 答复后：待决策 / 阻塞 → 待开始；--pass 只处理「待验证」，归档后写入 dev-progress.md。
+  写操作前先读现状，写入用临时文件 + rename，写后回读校验。
+
+文件：只读写项目下的 .dsh/tasks/backlog.md 与 dev-progress.md（运行流水追加到 auto/run.log），
+      不写 inbox，不复制状态机。新需求请用 DSH 的 task_add 录入。
+
+退出码：0 成功 · 1 用法错误 · 2 任务池未初始化 / 目录不存在 · 3 目标不存在、状态不符或任务池为空`
+
+class CliError extends Error {
+  constructor(code, message) {
+    super(message)
+    this.name = 'CliError'
+    this.code = code
+  }
+}
+
+function out(line = '') {
+  process.stdout.write(`${line}\n`)
+}
+
+function err(line = '') {
+  process.stderr.write(`${line}\n`)
+}
+
+async function writeAtomic(path, text) {
+  // 同一个目录内写临时文件再 rename：rename 是原子的，不会留下半截 backlog。
+  const tmp = `${path}.tmp-${process.pid}-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 8)}`
+  await mkdir(dirname(path), { recursive: true })
+  try {
+    await writeFile(tmp, text, 'utf8')
+    await rename(tmp, path)
+  } catch (error) {
+    await rm(tmp, { force: true }).catch(() => {})
+    throw error
+  }
+}
+
+class CliStore extends TaskStore {
+  async saveBacklog(parsed) {
+    const text = renderBacklog(parsed)
+    await writeAtomic(this.backlogPath, text)
+    return text
+  }
+
+  async writeProgress(text) {
+    await writeAtomic(this.progressPath, text)
+  }
+}
+
+const ACTION_LABELS = {
+  status: '--status',
+  decision: '-d',
+  pass: '--pass',
+  selftest: '--selftest',
+  help: '-h',
+}
+
+function needValue(argv, index, flag, hint) {
+  const value = argv[index + 1]
+  if (value === undefined || value === '' || (value.startsWith('-') && value !== '-')) {
+    throw new CliError(1, `${flag} 需要参数：${hint}`)
+  }
+  return value
+}
+
+function parseArgs(argv) {
+  const opts = { action: '', dir: '', ids: '', except: [], body: [] }
+  const setAction = next => {
+    if (opts.action && opts.action !== next) {
+      throw new CliError(1, `参数冲突：「${ACTION_LABELS[opts.action]}」与「${ACTION_LABELS[next]}」不能同时使用`)
+    }
+    opts.action = next
+  }
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]
+    if (arg === '-h' || arg === '--help') { opts.action = 'help'; return opts }
+    if (arg === '-C' || arg === '--dir') { opts.dir = needValue(argv, i, arg, '项目目录'); i++; continue }
+    if (arg === '--status') { setAction('status'); continue }
+    if (arg === '-d' || arg === '--decision') {
+      opts.ids = needValue(argv, i, arg, '任务 ID，如 T-016')
+      setAction('decision')
+      i++
+      continue
+    }
+    if (arg === '--pass') { setAction('pass'); continue }
+    if (arg === '--except') { opts.except.push(needValue(argv, i, arg, '要排除的任务 ID')); i++; continue }
+    if (arg === '--selftest') { setAction('selftest'); continue }
+    if (arg === '--') { opts.body.push(...argv.slice(i + 1)); break }
+    if (arg.startsWith('-') && arg !== '-') throw new CliError(1, `未知参数：${arg}（-h 查看用法）`)
+    opts.body.push(arg)
+  }
+  return opts
+}
+
+/** 「t-7 / T-7 / T-007 / 中文逗号」统一成 T-007；非法格式直接报错。 */
+function parseIdList(raw, flag) {
+  const tokens = String(raw ?? '').replace(/[，、]/g, ',').split(/[,\s]+/).map(token => token.trim()).filter(Boolean)
+  if (!tokens.length) throw new CliError(1, `${flag} 需要任务 ID，如 T-016（多个用逗号分隔）`)
+  const ids = []
+  for (const token of tokens) {
+    const match = /^T-(\d+)$/i.exec(token)
+    if (!match) throw new CliError(3, `无效的任务 ID：${token}（格式应为 T-001，多个用逗号分隔）`)
+    const id = `T-${String(Number(match[1])).padStart(3, '0')}`
+    if (!ids.includes(id)) ids.push(id)
+  }
+  return ids
+}
+
+/** 从 -C 指定的目录（默认 cwd）向上找 .dsh/tasks/backlog.md，返回项目根。 */
+async function resolveRoot(dir) {
+  const start = resolve(dir || process.cwd())
+  if (!(await isDir(start))) throw new CliError(2, `目录不存在：${start}`)
+  let current = start
+  while (true) {
+    if (await exists(join(current, STATE_DIR, 'backlog.md'))) return current
+    const parent = dirname(current)
+    if (parent === current) break
+    current = parent
+  }
+  throw new CliError(2, `任务池未初始化：从 ${start} 向上没有找到 ${STATE_DIR}/backlog.md。请先在项目根目录运行 task_init（或在 DSH 会话里调用 task_init）。`)
+}
+
+async function readStdin() {
+  const chunks = []
+  for await (const chunk of process.stdin) chunks.push(chunk)
+  return Buffer.concat(chunks).toString('utf8')
+}
+
+async function resolveBody(parts) {
+  let body = parts.join(' ').trim()
+  if (!body) {
+    if (process.stdin.isTTY) err('输入答复内容，Ctrl-D 结束：')
+    body = (await readStdin()).trim()
+  }
+  if (!body) throw new CliError(1, '答复内容为空：请写在 ID 后面，如 dsh-task -d T-016 "方案 B，理由…"')
+  return body
+}
+
+function failVerify(message) {
+  throw new CliError(1, `写入校验失败：${message}。文件可能被并发修改，请用 --status 复查后再试。`)
+}
+
+async function cmdStatus(store) {
+  const data = await store.load()
+  const verifyRows = data.backlog.tasks
+    .filter(task => task.status === STATUS.VERIFY)
+    .map(task => `${task.id}（${task.priority}）${task.title}`)
+  const inboxCount = (await store.readInbox()).length
+  out(`任务池：${store.dir}`)
+  out('')
+  out(buildStatusReport(data, { verifyRows, inboxCount }))
+  return 0
+}
+
+async function cmdDecision(store, opts) {
+  const ids = parseIdList(opts.ids, '-d')
+  const body = await resolveBody(opts.body)
+  const data = await store.load()
+  const backlog = data.backlog
+
+  if (!backlog.tasks.length && !backlog.decisions.length) {
+    throw new CliError(3, `任务池为空：backlog.md 里还没有任何任务，无法答复 ${ids.join('、')}。先用 task_add 录入需求，再 -d 答复。`)
+  }
+
+  const entries = ids.map(id => ({
+    id,
+    task: backlog.tasks.find(task => task.id === id),
+    decision: backlog.decisions.find(row => row.task === id),
+  }))
+  const unknown = entries.filter(entry => !entry.task && !entry.decision).map(entry => entry.id)
+  if (unknown.length) {
+    throw new CliError(3, `未知任务 ID：${unknown.join('、')}。backlog 的 P0–P3 表和「待决策」表里都没有该 ID（--status 可查看现有任务）。`)
+  }
+
+  const warnings = entries
+    .filter(entry => entry.task && entry.task.status !== STATUS.DECISION && entry.task.status !== STATUS.BLOCKED)
+    .map(entry => `⚠ ${entry.id} 当前状态「${entry.task.status}」，不是「待决策 / 阻塞」；仍记录答复，状态不变。`)
+
+  for (const entry of entries) {
+    const previous = entry.task?.status
+    await answerTask(store, backlog, entry.id, body)
+    // answerTask 只在任务行存在时保存；只剩「待决策」行的任务要自己落盘。
+    if (!entry.task) await store.saveBacklog(backlog)
+
+    const raw = await readText(store.backlogPath)
+    const after = parseBacklog(raw)
+    const task = after.tasks.find(row => row.id === entry.id)
+    if (entry.task && !task) failVerify(`${entry.id} 答复后从 backlog 中消失`)
+    if (entry.task && !raw.includes(cell(entry.task.note))) failVerify(`${entry.id} 的备注没有写入答复内容`)
+    if (after.decisions.some(row => row.task === entry.id)) failVerify(`${entry.id} 的「待决策」行没有清除`)
+    if (task && (previous === STATUS.DECISION || previous === STATUS.BLOCKED) && task.status !== STATUS.TODO) {
+      failVerify(`${entry.id} 答复后状态为「${task.status}」，应为「${STATUS.TODO}」`)
+    }
+
+    if (previous === STATUS.DECISION || previous === STATUS.BLOCKED) {
+      out(`✓ ${entry.id} 已答复 → ${STATUS.TODO}`)
+    } else if (!entry.task) {
+      out(`✓ ${entry.id} 已答复（已清除「待决策」行）`)
+    } else {
+      out(`✓ ${entry.id} 已答复（状态保持「${task?.status ?? '—'}」）`)
+    }
+  }
+
+  for (const warning of warnings) err(warning)
+  out('')
+  out(`共 ${entries.length} 条答复写入 ${store.rel(store.backlogPath)}（已回读校验）`)
+  return 0
+}
+
+async function cmdPass(store, opts) {
+  const except = new Set(opts.except.length ? parseIdList(opts.except.join(','), '--except') : [])
+  const explicit = opts.body.length ? parseIdList(opts.body.join(' '), '--pass') : []
+  const data = await store.load()
+  const backlog = data.backlog
+
+  if (!backlog.tasks.length) {
+    throw new CliError(3, '任务池为空：backlog.md 里还没有任何任务。先用 task_add 录入需求，再 --pass。')
+  }
+
+  const pending = backlog.tasks.filter(task => task.status === STATUS.VERIFY)
+  const skipped = []
+  const candidates = []
+  const seen = new Set()
+
+  if (explicit.length) {
+    for (const id of explicit) {
+      if (seen.has(id)) continue
+      seen.add(id)
+      if (except.has(id)) {
+        skipped.push(`- ${id} 已由 --except 排除`)
+        continue
+      }
+      const task = backlog.tasks.find(row => row.id === id)
+      if (!task) {
+        skipped.push(`⚠ ${id} 不在任务池中，跳过`)
+        continue
+      }
+      if (task.status !== STATUS.VERIFY) {
+        skipped.push(`⚠ ${id} 当前状态「${task.status}」，不是「${STATUS.VERIFY}」，跳过`)
+        continue
+      }
+      candidates.push(task)
+    }
+  } else {
+    for (const task of pending) {
+      if (except.has(task.id)) {
+        skipped.push(`- ${task.id} 已由 --except 排除`)
+        continue
+      }
+      candidates.push(task)
+    }
+  }
+
+  if (!candidates.length) {
+    for (const line of skipped) err(line)
+    if (explicit.length) {
+      throw new CliError(3, '没有可归档的任务：指定的 ID 都不在「待验证」状态（详见上方提示）。')
+    }
+    out(pending.length ? '按 --except 排除后没有可归档的任务。' : '当前没有「待验证」任务，无需归档。')
+    return 0
+  }
+
+  for (const task of candidates) {
+    const id = task.id
+    await confirmTask(store, backlog, task, {
+      conclusion: '需求方终端确认通过（dsh-task --pass）',
+      closeMethod: '需求方确认（dsh-task --pass）',
+    })
+
+    const after = parseBacklog(await readText(store.backlogPath))
+    if (after.tasks.some(row => row.id === id)) failVerify(`${id} 仍在 backlog.md 中`)
+    const progress = await readText(store.progressPath)
+    if (!new RegExp(`^### ${id}\\s`, 'm').test(progress)) failVerify(`${id} 的归档记录没有写入 dev-progress.md`)
+
+    out(`✓ ${id} 已归档到 ${store.rel(store.progressPath)}`)
+  }
+
+  for (const line of skipped) err(line)
+  const remaining = backlog.tasks.filter(task => task.status === STATUS.VERIFY).length
+  out('')
+  out(`共归档 ${candidates.length} 条${skipped.length ? `（跳过 ${skipped.length} 条）` : ''}；待验证剩余 ${remaining} 条`)
+  return 0
+}
+
+async function runCli(args, cwd) {
+  const result = await runProcess(process.execPath, [CLI_PATH, ...args], { cwd, timeoutMs: 120000 })
+  return {
+    code: result.code,
+    stdout: result.stdout || '',
+    stderr: result.stderr || '',
+    timedOut: result.timedOut,
+  }
+}
+
+/** --selftest：临时目录造最小任务池，端到端跑真实子进程，不动真实 .dsh/tasks/。 */
+async function selftest() {
+  const roots = []
+  const results = []
+
+  const makeRoot = async prefix => {
+    const dir = await mkdtemp(join(tmpdir(), prefix))
+    roots.push(dir)
+    return dir
+  }
+
+  const check = async (name, fn) => {
+    try {
+      await fn()
+      results.push({ name, ok: true })
+      out(`PASS  ${name}`)
+    } catch (error) {
+      results.push({ name, ok: false })
+      out(`FAIL  ${name} :: ${String(error?.stack ?? error)}`)
+    }
+  }
+
+  const describe = result => `exit=${result.code}${result.timedOut ? ' (timeout)' : ''}\n--- stdout ---\n${result.stdout}\n--- stderr ---\n${result.stderr}`
+
+  const dir = await makeRoot('dsh-task-selftest-')
+  const store = new CliStore(dir, { stateDir: STATE_DIR })
+  await store.init()
+  const data = await store.load()
+  addTasks(data.backlog, [
+    { title: '状态概览任务', priority: 'P1', module: 'CLI', acceptance: 'node bin/dsh-task --status' },
+    { title: '待决策任务', priority: 'P1', module: 'CLI', acceptance: 'dsh-task -d T-002 "选 A"' },
+    { title: '阻塞任务', priority: 'P2', module: 'CLI', acceptance: 'dsh-task -d T-003 "可以继续"' },
+    { title: '待验证甲', priority: 'P2', module: 'CLI', acceptance: 'node selftest.mjs' },
+    { title: '待验证乙', priority: 'P3', module: 'CLI', acceptance: 'node bin/dsh-task --selftest' },
+  ])
+  const setStatus = (id, status) => {
+    const task = data.backlog.tasks.find(row => row.id === id)
+    if (!task) throw new Error(`夹具缺少 ${id}`)
+    task.status = status
+  }
+  setStatus('T-002', STATUS.DECISION)
+  setStatus('T-003', STATUS.BLOCKED)
+  setStatus('T-004', STATUS.VERIFY)
+  setStatus('T-005', STATUS.VERIFY)
+  addDecision(data.backlog, { task: 'T-002', question: '用 A 还是 B？', options: 'A（推荐） / B' })
+  await store.saveBacklog(data.backlog)
+
+  await check('--help 显示用法、示例与状态机', async () => {
+    const result = await runCli(['-h'], dir)
+    if (result.code !== 0) throw new Error(`--help 退出码应为 0\n${describe(result)}`)
+    for (const pattern of [/用法：/, /示例：/, /状态机/, /--status/, /--pass/, /-d/]) {
+      if (!pattern.test(result.stdout)) throw new Error(`--help 缺少 ${pattern}\n${describe(result)}`)
+    }
+  })
+
+  await check('--status 打印概览、阻塞明细与下一步', async () => {
+    const result = await runCli(['--status'], dir)
+    if (result.code !== 0) throw new Error(`--status 退出码应为 0\n${describe(result)}`)
+    for (const pattern of [/\*\*待验证\*\*：2 条/, /\*\*待决策\*\*：1 条/, /阻塞明细/, /T-003/, /\*\*建议下一步\*\*：T-001/]) {
+      if (!pattern.test(result.stdout)) throw new Error(`--status 缺少 ${pattern}\n${describe(result)}`)
+    }
+  })
+
+  await check('-d 多 ID 答复（中文逗号 / 小写 ID 归一化）', async () => {
+    const result = await runCli(['-d', 't-2，T-3', '选方案 A'], dir)
+    if (result.code !== 0) throw new Error(`-d 退出码应为 0\n${describe(result)}`)
+    if (!/T-002/.test(result.stdout) || !/T-003/.test(result.stdout)) throw new Error(`-d 输出缺少 ID\n${describe(result)}`)
+    const after = await store.load()
+    const t2 = after.backlog.tasks.find(task => task.id === 'T-002')
+    const t3 = after.backlog.tasks.find(task => task.id === 'T-003')
+    if (!t2 || t2.status !== STATUS.TODO) throw new Error(`T-002 答复后应为「${STATUS.TODO}」，实际 ${t2?.status}`)
+    if (!t3 || t3.status !== STATUS.TODO) throw new Error(`T-003 答复后应为「${STATUS.TODO}」，实际 ${t3?.status}`)
+    if (!/选方案 A/.test(t2.note)) throw new Error('T-002 备注里没有答复内容')
+    if (after.backlog.decisions.length) throw new Error('「待决策」行没有被清除')
+  })
+
+  await check('--pass --except 只归档未被排除的待验证任务', async () => {
+    const result = await runCli(['--pass', '--except', 'T-004'], dir)
+    if (result.code !== 0) throw new Error(`--pass --except 退出码应为 0\n${describe(result)}`)
+    if (!/共归档 1 条/.test(result.stdout)) throw new Error(`--pass 归档数不对\n${describe(result)}`)
+    const after = await store.load()
+    if (!after.backlog.tasks.some(task => task.id === 'T-004')) throw new Error('T-004 被 --except 排除后不应归档')
+    if (after.backlog.tasks.some(task => task.id === 'T-005')) throw new Error('T-005 应已从 backlog 归档')
+    if (!/^### T-005\s/m.test(after.progress)) throw new Error('dev-progress.md 缺少 T-005 归档记录')
+    if (/^### T-004\s/m.test(after.progress)) throw new Error('dev-progress.md 不应出现 T-004 归档记录')
+  })
+
+  await check('--pass 显式 ID（T-4 补零）且无临时文件残留', async () => {
+    const result = await runCli(['--pass', 'T-4'], dir)
+    if (result.code !== 0) throw new Error(`--pass T-4 退出码应为 0\n${describe(result)}`)
+    if (!/T-004/.test(result.stdout)) throw new Error(`--pass 输出缺少 T-004\n${describe(result)}`)
+    const after = await store.load()
+    if (after.backlog.tasks.some(task => task.id === 'T-004')) throw new Error('T-004 应已从 backlog 归档')
+    if (!/^### T-004\s/m.test(after.progress)) throw new Error('dev-progress.md 缺少 T-004 归档记录')
+    if (!/需求方确认（dsh-task --pass）/.test(after.progress)) throw new Error('归档记录缺少关闭方式')
+    const leftovers = (await readdir(join(dir, STATE_DIR))).filter(name => name.includes('.tmp-'))
+    if (leftovers.length) throw new Error(`发现未清理的临时文件：${leftovers.join(', ')}`)
+  })
+
+  await check('未知 ID 报错且不写文件', async () => {
+    const backlogPath = join(dir, STATE_DIR, 'backlog.md')
+    const before = await readText(backlogPath)
+    const result = await runCli(['-d', 'T-999', '随便答'], dir)
+    if (result.code !== 3) throw new Error(`未知 ID 退出码应为 3\n${describe(result)}`)
+    if (!/未知任务 ID/.test(result.stderr) || !/T-999/.test(result.stderr)) throw new Error(`未知 ID 错误信息不明确\n${describe(result)}`)
+    const after = await readText(backlogPath)
+    if (after !== before) throw new Error('未知 ID 不应修改 backlog.md')
+  })
+
+  await check('未初始化目录给出中文错误（退出码 2）', async () => {
+    const noPool = await makeRoot('dsh-task-nopool-')
+    const result = await runCli(['--status', '-C', noPool], dir)
+    if (result.code !== 2) throw new Error(`未初始化退出码应为 2\n${describe(result)}`)
+    if (!/未初始化/.test(result.stderr) || !/task_init/.test(result.stderr)) throw new Error(`未初始化错误信息不明确\n${describe(result)}`)
+  })
+
+  await check('空池：--status 可用，--pass 报错（退出码 3）', async () => {
+    const emptyPool = await makeRoot('dsh-task-empty-')
+    const emptyStore = new CliStore(emptyPool, { stateDir: STATE_DIR })
+    await emptyStore.init()
+    const statusResult = await runCli(['--status', '-C', emptyPool], dir)
+    if (statusResult.code !== 0) throw new Error(`空池 --status 退出码应为 0\n${describe(statusResult)}`)
+    if (!/待办池为空/.test(statusResult.stdout)) throw new Error(`空池 --status 缺少提示\n${describe(statusResult)}`)
+    const passResult = await runCli(['--pass', '-C', emptyPool], dir)
+    if (passResult.code !== 3) throw new Error(`空池 --pass 退出码应为 3\n${describe(passResult)}`)
+    if (!/任务池为空/.test(passResult.stderr)) throw new Error(`空池 --pass 错误信息不明确\n${describe(passResult)}`)
+  })
+
+  for (const root of roots) await rm(root, { recursive: true, force: true }).catch(() => {})
+
+  const passed = results.filter(item => item.ok).length
+  out('')
+  out(`selftest: ${passed}/${results.length} PASS`)
+  return passed === results.length ? 0 : 1
+}
+
+async function main(argv) {
+  if (!argv.length) {
+    out(HELP)
+    return 0
+  }
+
+  const opts = parseArgs(argv)
+  if (opts.action === 'help') {
+    out(HELP)
+    return 0
+  }
+  if (opts.action === 'selftest') return selftest()
+  if (!opts.action) {
+    throw new CliError(1, '缺少动作：请指定 --status / -d / --pass / --selftest（-h 查看用法）。投递新需求请用 task_add。')
+  }
+  if (opts.action === 'status' && opts.body.length) {
+    throw new CliError(1, `--status 不接受额外参数：${opts.body.join(' ')}`)
+  }
+
+  const root = await resolveRoot(opts.dir)
+  const store = new CliStore(root, { stateDir: STATE_DIR })
+  try {
+    await store.ensureInitialized()
+  } catch (error) {
+    throw new CliError(2, String(error?.message ?? error))
+  }
+
+  if (opts.action === 'status') return cmdStatus(store)
+  if (opts.action === 'decision') return cmdDecision(store, opts)
+  if (opts.action === 'pass') return cmdPass(store, opts)
+  throw new CliError(1, `未知动作：${opts.action}（-h 查看用法）`)
+}
+
+main(process.argv.slice(2)).then(code => {
+  process.exitCode = code
+}).catch(error => {
+  if (error instanceof CliError) {
+    err(`✗ ${error.message}`)
+    process.exitCode = error.code
+  } else {
+    err(`✗ dsh-task 内部错误：${error?.stack ?? error}`)
+    process.exitCode = 1
+  }
+})

@@ -7,12 +7,15 @@
 [![npm](https://img.shields.io/npm/v/dsh-task-suite?color=22d3ee)](https://www.npmjs.com/package/dsh-task-suite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-34d399.svg)](LICENSE)
 [![DSH plugin](https://img.shields.io/badge/DeepSeek%20Harness-plugin-a78bfa)](https://github.com/qiqll/dsh-task-suite)
+[![awesome-dsh-plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
-[**介绍页**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [插件市场](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) · [Release 1.1.1](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.1)
+[**介绍页**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [插件市场](https://awesome-dsh-plugin.com) · [Release 1.1.1](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.1)
 
 把 Claude 的 `task-*` 任务体系移植到 DeepSeek Harness：一份 Markdown 任务池、一套状态机、主会话调度、后台 worker、机器验收，以及一个只读的可视化面板。
 
 它不是又一个 todo list。它解决的是「AI 说完成了，但没人验证」的问题。
+
+**git 不是必需**：在 git 仓库里用 commit/worktree 验收；在普通目录自动降级为「文件快照模式」，用快照 + 文件清单完成基线比对、改动归属、测试改弱审计和回滚。
 
 ## 你现在的 Agent，更像一个随时待命的助理
 
@@ -86,7 +89,7 @@ dsh plugin --profile desktop add qiqll/dsh-task-suite
 
 > `--profile` 必填：桌面版通常是 `desktop`，Web 版是 `web`；换成你实际使用的 profile 名。
 
-桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。
+桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。首次安装后工具与三个 skill（`task-admin` / `task-loop` / `task-worker`）自动注册。
 
 **首次安装后必须完整退出并重新打开 DSH。** Web 客户端插件表在进程启动时组合，只刷新页面不会加载新插件的客户端部分；Host 工具和任务池不受影响。之后进入任意会话即可使用。
 
@@ -116,7 +119,9 @@ UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)�
 
 ## 插件市场
 
-本插件按 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 的收录格式准备；市场卡片、安装与更新由该目录和 npm 版本驱动。
+本插件已收录进 [awesome-dsh-plugin](https://awesome-dsh-plugin.com)（分类 `workflow`，源码目录见 [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)）；市场卡片、安装与更新由该目录和 npm 版本驱动。
+
+详情页的 AppStore 风格截图来自仓库根目录的 [`screenshots.json`](screenshots.json)，共 3 张（面板总览、运行中、流程示意），文件在 [`docs/screenshots/`](docs/screenshots/)。改图只需改这个 JSON，不必重新发版。
 
 ## 快速开始
 

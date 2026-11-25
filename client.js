@@ -50,10 +50,11 @@ window.__ModuleLoader__.load({
       return `${Math.floor(hour / 24)}d ${hour % 24}h`
     }
 
+    // run.log 与指标都是 UTC 口径，面板不再按浏览器本地时区换算。
     function clock(iso) {
       const time = Date.parse(iso || '')
       if (!Number.isFinite(time)) return '—'
-      return new Date(time).toLocaleTimeString('zh-CN', { hour12: false })
+      return new Date(time).toLocaleTimeString('en-GB', { hour12: false, timeZone: 'UTC' })
     }
 
     function timeAgo(iso) {
@@ -112,10 +113,46 @@ window.__ModuleLoader__.load({
 
     function AgentRow({ agent }) {
       const active = agent.activity === 'running' || agent.activity === 'live'
+      const source = agent.source === 'current' ? 'current.json' : '实时'
+      const last = agent.lastActivity
       return h('div', { className: 'dts-agent', style: { paddingLeft: `${8 + Math.min(Number(agent.depth) || 0, 3) * 12}px` } },
-        h('span', { className: 'dts-dot', style: { background: active ? 'var(--dsw-alias-state-success-primary)' : 'var(--dsw-alias-state-idle-primary)' } }),
-        h('span', { className: 'dts-agent-label', title: agent.id }, agent.label || String(agent.id).slice(0, 8)),
-        h('span', { className: 'dts-agent-meta' }, agent.kind === 'main' ? '主 agent' : (agent.mode || 'subagent'), ' · ', active ? '运行中' : '待命'))
+        h('div', { className: 'dts-agent-line' },
+          h('span', { className: 'dts-dot', style: { background: active ? 'var(--dsw-alias-state-success-primary)' : 'var(--dsw-alias-state-idle-primary)' } }),
+          h('span', { className: 'dts-agent-label', title: agent.id }, agent.label || String(agent.id).slice(0, 8)),
+          h('span', { className: 'dts-agent-meta' },
+            agent.kind === 'main' ? '主 agent' : (agent.mode || 'subagent'), ' · ', active ? '运行中' : '待命', ' · ', source)),
+        last
+          ? h('div', { className: 'dts-agent-last', title: `${last.event} ${last.detail}` },
+            `最近活动 ${clock(last.at || last.time)} · ${last.event} ${last.detail}`)
+          : null)
+    }
+
+    function VerifyCard({ card }) {
+      const steps = card.steps?.length ? card.steps : ['—（待补：worker 报告未给怎么验）']
+      return h('div', { className: 'dts-verify' },
+        h('div', { className: 'dts-verify-head' },
+          h('span', { className: 'dts-priority', style: { color: toneColor(PRIORITY_TONE[card.priority] || 'idle') } }, card.priority || '—'),
+          h('span', { className: 'dts-task-id' }, card.id),
+          h('span', { className: 'dts-verify-title', title: card.title }, card.title),
+          card.hold ? h(Pill, { tone: 'error' }, 'hold') : null,
+          h(Pill, { tone: card.defaultPass?.enabled ? 'warn' : 'idle' },
+            card.waitingDays == null ? '起始日未知' : `已等 ${card.waitingDays} 天`)),
+        h('div', { className: 'dts-verify-row' },
+          h('span', { className: 'dts-verify-key' }, '怎么验'),
+          h('ol', { className: 'dts-verify-steps' }, steps.map((step, index) => h('li', { key: index }, step)))),
+        h('div', { className: 'dts-verify-row' },
+          h('span', { className: 'dts-verify-key' }, '默认通过'),
+          h('span', { className: card.defaultPass?.enabled ? 'dts-verify-due' : 'dts-verify-hold', title: card.defaultPassText }, card.defaultPassText)),
+        card.holdReasons?.length
+          ? h('div', { className: 'dts-verify-row' },
+            h('span', { className: 'dts-verify-key' }, '原因'),
+            h('span', { className: 'dts-verify-hold' }, card.holdReasons.join('；')))
+          : null,
+        card.acceptance
+          ? h('div', { className: 'dts-verify-row' },
+            h('span', { className: 'dts-verify-key' }, '验收'),
+            h('span', { className: 'dts-verify-accept', title: card.acceptance }, card.acceptance))
+          : null)
     }
 
     function TaskSection({ tasks, filter, setFilter, counts }) {
@@ -184,32 +221,40 @@ window.__ModuleLoader__.load({
       const tasks = state?.tasks || []
       const counts = state?.counts || {}
       const metrics = state?.metrics || {}
+      const metricText = metrics.text || {}
       const loop = state?.loop || {}
       const current = loop.current
       const agents = state?.agents || []
+      const agentsSource = state?.agentsSource || 'none'
+      const verifyCards = state?.verifyCards || []
       const events = state?.events || []
-      const completion = Number.isFinite(metrics.completionRate) ? `${Math.round(metrics.completionRate * 100)}%` : '—'
-      const firstPass = Number.isFinite(metrics.firstPassRate) ? `${Math.round(metrics.firstPassRate * 100)}%` : '—'
+      // 服务端已把无数据格式化成 `—`；老版本接口没有 text 时按原字段兜底。
+      const completion = metricText.completionRate
+        || (Number.isFinite(metrics.completionRate) ? `${Math.round(metrics.completionRate * 100)}%` : '—')
+      const firstPass = metricText.firstPassRate
+        || (Number.isFinite(metrics.firstPassRate) ? `${Math.round(metrics.firstPassRate * 100)}%` : '—')
+      const medianCycle = metricText.medianCycle
+        || (Number.isFinite(metrics.medianCycleMs) ? duration(metrics.medianCycleMs) : '—')
 
       return h('div', { className: 'dts-root' },
         h('style', null, `
-          .dts-root { height: 100%; overflow: auto; padding: 12px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); font: 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+          .dts-root { height: 100%; overflow: auto; padding: 12px; color: var(--dsw-alias-label-primary); background: var(--dsw-alias-bg-base); font: 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; word-break: break-word; overflow-wrap: anywhere; }
           .dts-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:10px; }
           .dts-title { font-size:15px; font-weight:650; letter-spacing:.1px; }
           .dts-sub { color:var(--dsw-alias-label-secondary); font-size:11px; margin-top:2px; }
           .dts-refresh { border:1px solid var(--dsw-alias-border-l1); background:var(--dsw-alias-bg-layer-1); color:var(--dsw-alias-label-secondary); border-radius:6px; padding:4px 8px; cursor:pointer; font-size:11px; }
           .dts-refresh:hover { color:var(--dsw-alias-label-primary); border-color:var(--dsw-alias-border-l2); }
-          .dts-pill { display:inline-flex; align-items:center; gap:4px; border:1px solid; border-radius:999px; padding:1px 7px; font-size:10px; white-space:nowrap; }
+          .dts-pill { display:inline-flex; align-items:center; gap:4px; border:1px solid; border-radius:999px; padding:1px 7px; font-size:10px; white-space:nowrap; max-width:100%; overflow-wrap:anywhere; }
           .dts-dot { width:6px; height:6px; border-radius:50%; display:inline-block; flex:none; }
           .dts-section { margin-top:12px; }
-          .dts-section-head { display:flex; justify-content:space-between; align-items:center; color:var(--dsw-alias-label-secondary); font-size:11px; text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
-          .dts-count { text-transform:none; letter-spacing:0; }
+          .dts-section-head { display:flex; justify-content:space-between; align-items:center; gap:6px; color:var(--dsw-alias-label-secondary); font-size:11px; text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+          .dts-count { text-transform:none; letter-spacing:0; text-align:right; }
           .dts-current { border:1px solid var(--dsw-alias-border-l2); background:var(--dsw-alias-bg-layer-1); border-radius:8px; padding:10px; }
-          .dts-current-head { display:flex; align-items:center; gap:6px; min-width:0; }
-          .dts-current-title { font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .dts-current-head { display:flex; align-items:center; gap:6px; min-width:0; flex-wrap:wrap; }
+          .dts-current-title { font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
           .dts-current-meta { color:var(--dsw-alias-label-secondary); margin-top:6px; display:flex; flex-wrap:wrap; gap:4px 10px; }
           .dts-current-meta b { color:var(--dsw-alias-label-primary); font-weight:550; }
-          .dts-stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin-top:10px; }
+          .dts-stats { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:6px; margin-top:10px; }
           .dts-stat { border:1px solid var(--dsw-alias-border-l1); background:var(--dsw-alias-bg-layer-1); border-radius:7px; padding:7px 8px; min-width:0; }
           .dts-stat-value { font-size:16px; font-weight:650; line-height:1.2; }
           .dts-stat-label { color:var(--dsw-alias-label-secondary); font-size:10px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -231,18 +276,56 @@ window.__ModuleLoader__.load({
           .dts-current-label { color:var(--dsw-alias-brand-primary); flex:none; }
           .dts-task-detail { border-top:1px dashed var(--dsw-alias-border-l1); margin-top:6px; padding-top:5px; color:var(--dsw-alias-label-secondary); font-size:10.5px; white-space:pre-wrap; word-break:break-word; }
           .dts-kv { display:flex; gap:8px; margin-top:3px; }
-          .dts-agent { display:flex; align-items:center; gap:5px; padding:3px 0; min-width:0; }
-          .dts-agent-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .dts-agent { display:flex; flex-direction:column; gap:2px; padding:3px 0; min-width:0; }
+          .dts-agent-line { display:flex; align-items:center; gap:5px; min-width:0; }
+          .dts-agent-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
           .dts-agent-meta { color:var(--dsw-alias-label-secondary); font-size:10px; margin-left:auto; flex:none; }
+          .dts-agent-last { color:var(--dsw-alias-label-secondary); font-size:10px; padding-left:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .dts-verify { border:1px solid var(--dsw-alias-border-l1); background:var(--dsw-alias-bg-layer-1); border-radius:6px; padding:7px 8px; }
+          .dts-verify + .dts-verify { margin-top:4px; }
+          .dts-verify-head { display:flex; align-items:center; gap:5px; min-width:0; flex-wrap:wrap; }
+          .dts-verify-title { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:550; }
+          .dts-verify-row { display:flex; gap:6px; margin-top:4px; min-width:0; }
+          .dts-verify-key { color:var(--dsw-alias-label-secondary); flex:none; width:48px; font-size:10px; }
+          .dts-verify-steps { margin:0; padding-left:16px; min-width:0; }
+          .dts-verify-steps li { overflow-wrap:anywhere; word-break:break-word; }
+          .dts-verify-due { color:var(--dsw-alias-state-warn-primary); min-width:0; overflow-wrap:anywhere; }
+          .dts-verify-hold { color:var(--dsw-alias-state-error-primary); min-width:0; overflow-wrap:anywhere; }
+          .dts-verify-accept { min-width:0; overflow-wrap:anywhere; }
+          .dts-path { display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
           .dts-event { display:flex; gap:5px; padding:3px 0; border-bottom:1px dashed var(--dsw-alias-border-l1); font-size:10.5px; min-width:0; }
           .dts-event:last-child { border-bottom:0; }
           .dts-event-time { color:var(--dsw-alias-label-secondary); flex:none; font-variant-numeric:tabular-nums; }
           .dts-event-task { color:var(--dsw-alias-brand-primary); flex:none; }
-          .dts-event-text { color:var(--dsw-alias-label-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .dts-event-text { color:var(--dsw-alias-label-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
           .dts-empty { color:var(--dsw-alias-label-secondary); border:1px dashed var(--dsw-alias-border-l1); border-radius:6px; padding:10px; text-align:center; font-size:11px; }
           .dts-error { color:var(--dsw-alias-state-error-primary); border:1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 35%, transparent); background:color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent); border-radius:6px; padding:7px; margin-bottom:8px; font-size:11px; white-space:pre-wrap; }
           .dts-muted { color:var(--dsw-alias-label-secondary); }
           .dts-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--dsw-alias-bg-layer-2); border-radius:4px; padding:1px 4px; }
+          /* 窄屏（< 520px）：中文不破版，徽章换行，指标两列变一列；长英文/路径省略。 */
+          @media (max-width: 520px) {
+            .dts-root { padding: 8px; }
+            .dts-top { flex-wrap: wrap; }
+            .dts-stats { grid-template-columns: 1fr; }
+            .dts-task-line { flex-wrap: wrap; }
+            .dts-task-id { flex:none; }
+            .dts-task-title { flex: 1 0 100%; white-space: normal; overflow-wrap: anywhere; }
+            .dts-task-meta { flex-wrap: wrap; }
+            .dts-task-meta span { white-space: normal; overflow-wrap: anywhere; }
+            .dts-pill { white-space: normal; }
+            .dts-current-head { flex-wrap: wrap; }
+            .dts-current-title { white-space: normal; overflow-wrap: anywhere; }
+            .dts-current-meta { flex-direction: column; gap: 2px; }
+            .dts-agent-line { flex-wrap: wrap; }
+            .dts-agent-meta { margin-left: 0; }
+            .dts-agent-last { white-space: normal; overflow-wrap: anywhere; }
+            .dts-verify-head { flex-wrap: wrap; }
+            .dts-verify-title { white-space: normal; overflow-wrap: anywhere; }
+            .dts-verify-row { flex-direction: column; gap: 1px; }
+            .dts-verify-key { width: auto; }
+            .dts-event { flex-wrap: wrap; }
+            .dts-event-text { white-space: normal; overflow-wrap: anywhere; }
+          }
         `),
         h('div', { className: 'dts-top' },
           h('div', null,

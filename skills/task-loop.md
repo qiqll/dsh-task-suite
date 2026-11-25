@@ -36,15 +36,25 @@
 
 2. **P0 插队**：只有线上故障 / 数据错误 / 安全漏洞才打断进行中任务。用 `task_pick task_id=<P0> interrupt=true`，它会先把当前任务标 `halted`（不回滚），再认领 P0；然后派 worker。
 
+3. **待验证到期检查（tick 自动做）**：每次 tick 在合并 inbox 之后、挑任务之前跑一遍，不需要你手动触发。
+   - backlog 的 `**待验证超时：** N 天`（缺省 7；`0` 关闭）决定到期默认通过。到期前 1 天写 `超时预告` 并在 `run.log` 记 `VERIFY_DUE`；满 24 小时且交付提交仍在分支上则归档「已完成」，记 `TIMEOUT_PASS`，`dev-progress.md` 的关闭方式写 `超时默认通过（N 天无人打回）`。
+   - 交付提交已不在分支 / 已被 revert，或文件快照差异为空 → **不关闭**，挂「待决策」，选项：打回重做 / 取消 / 仍按通过关闭。
+   - `⚠ 高风险区域改动`、`⚠ 测试有改动`、`默认通过：否` 的任务一律不默认通过；需求方说「别默认通过 / 我要亲自看」时用 `task_answer` 或 inbox decision 记下即可。
+   - tick 的返回文本里会带本次预告 / 归档 / hold 的任务，照实转告需求方（一句话即可）。
+
+4. **衍生任务**：报告 `DERIVED` 录入的任务默认 P3「AI 衍生 P3，只录不做」，循环**不会派发**。只有 reviewer 定为 `安全 High` / `安全 Critical` 且来源是 reviewer finding 的，才按不高于父任务的优先级入队；`BASELINE_RED` 产生的基线修复任务同样只录不做，会挂「待决策」等需求方决定是否提高优先级（不计无进展）。需求方让你做某条衍生任务时，把它挪到 P0–P2 表（或改优先级）后循环就会派发，即使备注里还留着「只录不做」。
+
 ## C. 验收（worker 完成通知到达时）
 
 1. 从通知里找 `=== TASK-AUTO REPORT ===` 到 `=== END REPORT ===` 的报告块。找不到 → 若 worker 已结束，按 **FAILED（无报告）** 处理；仍在运行则等。
 2. 调 `task_accept report=<报告块原文>`。它会做机器闸门：nonce 一致性、提交归属（每个提交必须含任务 ID 且在 COMMITS 里）、越界/遗留文件、用基线 worktree 重跑 `TEST_CMD` 比对失败、测试改弱审计、高风险路径。**不要信 worker 自报的测试结果。**
+   全过时它可能**直接归档**（自动验收）：只改了测试（规则 a），或 P2/P3 且备注含 `验收方式：自动`、验收标准来自 backlog（规则 b）。没有自动验收的进「待验证」，note 里会写 `待验证起` 与 `怎么验`（来自报告 `VERIFY`；老报告没有就标「待补」）。
 3. 按返回的 `action` 处理：
 
 | action | 处理 |
 |--------|------|
-| `await_user` | 把 `brief`（做了什么、改了哪些文件、请怎么验证）3–6 行给需求方 → 任务进「待验证」。然后 tick 继续下一个。 |
+| `auto_accept` | 机器验收全过且命中免验规则，任务已直接归档「已完成」。把 `brief` 照常给需求方（一句话即可），**不用等确认**；需求方要改就说「打回 T-0NN」，`task_reject` 会重开。然后 tick 继续。 |
+| `await_user` | 把 `brief` 与「怎么验」3–6 行给需求方 → 任务进「待验证」。到期无人打回会默认通过。然后 tick 继续下一个。 |
 | `ask_user` | 把 `decision.question` 与 `options` 原样贴出，等 `task_answer` 或 inbox decision。然后 tick 继续别的任务。 |
 | `review` | worker 派不了 reviewer：你自己审 `start_sha..HEAD`（或再派一个 fresh-context code review）。无 High/Critical/Medium → `task_accept` 同报告 + `review="pass: 已复审，..."`，验收继续。有发现 → 用 `send_message` 发回 `worker-T-0NN`（同一 nonce），让它修完重交报告；重交后仍可带 `review` 验收。 |
 | `fix_test_cmd` | 把 TEST_CMD 不合规原因用 `send_message` 发回同一 worker，让它重给合规命令并重跑。 |
@@ -60,7 +70,8 @@ worker 在后台跑，你随时能接话。**不要因为需求方说话就自�
 | 需求方说 | 你做 |
 |---------|------|
 | 「加个任务：…」 | `task_inbox type=task text=…`。worker 在跑 → 回「已投递，当前任务结束后合并」；空闲 → `task_merge` 后 tick。 |
-| 「T-0NN 选 B / 按 X 做 / 通过 / 打回：…」 | `task_answer task_id=T-0NN answer=…`，或 `task_inbox type=decision ref=T-0NN text=…`。 |
+| 「T-0NN 选 B / 按 X 做 / 通过 / 打回：…」 | `task_answer task_id=T-0NN answer=…`，或 `task_inbox type=decision ref=T-0NN text=…`。打回一个**已归档**任务会自动重开（按 dev-progress 记录重建行）。 |
+| 「T-0NN 别默认通过 / 我要亲自看」 | `task_answer task_id=T-0NN answer="别默认通过，我要亲自看"`：保留待验证、撤掉超时预告、备注标 `默认通过：否`。 |
 | 「暂停 / 这个做完就停」 | `task_loop action=stop`（会在当前任务做完后生效，因为 tick 在派发前检查 STOP）。 |
 | 「立刻停」 | `interrupt_agent` 停 worker，再 `task_loop action=halt`。提交保留、不回滚；current 记断点。之后需求方说「继续」→ `task_loop action=resume`；说「放回队列」→ `action=requeue`。 |
 | 「进度 / 状态」 | `task_status`；必要时追加最近 8 行 run.log 与待决策清单。 |
@@ -75,10 +86,16 @@ worker 运行期间你**只写** inbox 与 auto 状态，不改 backlog / dev-pl
 - STOP 文件保留到下次 `task_loop action=start`。
 - 心跳：DSH 没有内建 cron。需要无人值守时可调用 `schedule_create` 投递「检查任务池并 tick」的提醒（例如每 20 分钟），停机时 `schedule_delete`。没有日程也可以完全靠 worker 完成通知驱动。
 
+## F. 运行时增强（通知 / 看门狗 / 事件）
+
+- **通知**：任务进入「待决策 / 待验证 / 阻塞」和循环停止时各发一次。默认**静默**，`TASK_NOTIFY=on` 才发、`TASK_NOTIFY=off` 关；`TASK_NOTIFY_CMD` 换成任意命令（`sh -c`，标题/文案作为 $1/$2，默认 10 秒超时）；macOS 用 `osascript`，Linux 用 `notify-send`，其他平台 no-op。同一事件 + 任务 ID 600 秒内只发一次（`TASK_NOTIFY_DEDUPE_SEC` 可调）。文案 ≤100 字，附 `dsh-task -d <ID> "…"` 回复命令；失败只在 run.log 写 `NOTIFY | WARN`，不影响循环。通知由 `task_accept`（待决策/待验证/阻塞）与 `task_loop stop|halt` 触发。
+- **看门狗（只读，默认开）**：心跳比较 worker 输出（`current.output`；没有就用 `run.log` 里最后一条非看门狗事件时间）与仓库时间（新提交 / 非开工脏文件改动）。`IDLE`＝输出 30 分钟无增长；`SPIN`＝输出在长但 60 分钟无新提交/文件变化。命中时 run.log 记 `WATCHDOG`（判定、时长、最近活动），并在 tick 与 `task_status` 文本里给「建议 nudge / 建议停止」。阈值 `watchdogIdleMin` / `watchdogSpinMin`（默认 30/60），`watchdog=false` 可关。`review_pending` 不检测。**插件不会替你去催 worker**：需要时你自己用平台工具处理，停 worker 用 `interrupt_agent`。
+- **run.log 事件**：`DISPATCH`（claim 派发）、`WATCHDOG`、`DECIDED`（task_answer / inbox 答复）、`REJECTED`（task_reject / 打回）、`ROLLBACK`（task_accept rollback 真实回滚）五类，行格式与 `TIMEOUT_PASS` 等一致（`时间 | 任务 | 事件 | 细节`），旧日志照常可读。
+
 ## 边界（硬约束）
 
 - 不 `git push`；不在主分支跑；不 `git reset --hard`；不 `git stash`。
 - 一次只跑一个 worker（共享工作区，并行会互相踩）。
-- 不发明需求：新任务只来自需求方投递和 worker 的 `DERIVED`（受每父 3 条、层级 ≤2 限制，由 `task_accept` 自动录入）。
+- 不发明需求：新任务只来自需求方投递和 worker 的 `DERIVED`（受每父 3 条、层级 ≤2 限制，由 `task_accept` 自动录入，默认 P3 只录不做）。
 - 主会话上下文只装报告和工具输出；需要看代码细节时派 agent 去看。
 - 需求方说「继续」而 current 是 halted：先问继续还是放回队列，不要闷头重派。
