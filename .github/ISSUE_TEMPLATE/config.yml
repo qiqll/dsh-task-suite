@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 使用问题 / 想法 / 展示
+    url: https://github.com/qiqll/dsh-task-suite/discussions
+    about: 安装求助、用法讨论、Show your setup 请走 Discussions。
+  - name: 插件市场条目
+    url: https://awesome-dsh-plugin.com
+    about: 收录信息、分类与截图问题。

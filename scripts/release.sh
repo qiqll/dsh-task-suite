@@ -44,6 +44,14 @@ fi
 
 printf '\n发布 %s@%s（tag %s）\n\n' "$PACKAGE" "$VERSION" "$TAG"
 
+# 版本一致性：package / CHANGELOG / README / tag 对不上就不发
+if [[ "$DRY_RUN" == "1" ]]; then
+  printf '0) 版本一致性\n  [dry-run] node scripts/check-version.mjs\n'
+else
+  printf '0) 版本一致性\n'
+  node scripts/check-version.mjs
+fi
+
 # --- 1. 推送 main -----------------------------------------------------------
 printf '1) 推送 main\n'
 if git rev-parse --verify --quiet "origin/main" >/dev/null \

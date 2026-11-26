@@ -1,310 +1,310 @@
-# DSH 任务流水线
+# DSH Task Pipeline
 
-**把 Agent 从“助理”变成一支工程团队。**
+[**English**](README.md) · [简体中文](README.zh-CN.md)
 
-> 主 Agent 只调度，后台 Agent 交付，机器验收后才算完成。
+**Turn one DSH agent into an engineering team.**
+
+> The lead agent only schedules. Background agents deliver. Nothing counts as done until a machine re-runs the tests.
 
 [![npm](https://img.shields.io/npm/v/dsh-task-suite?color=22d3ee)](https://www.npmjs.com/package/dsh-task-suite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-34d399.svg)](LICENSE)
 [![DSH plugin](https://img.shields.io/badge/DeepSeek%20Harness-plugin-a78bfa)](https://github.com/qiqll/dsh-task-suite)
 [![awesome-dsh-plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
-[**介绍页**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [插件市场](https://awesome-dsh-plugin.com) · [Release 1.1.1](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.1)
+[**Landing page**](https://qiqll.github.io/dsh-task-suite/) · [npm](https://www.npmjs.com/package/dsh-task-suite) · [Plugin market](https://awesome-dsh-plugin.com) · [Release 1.2.0](https://github.com/qiqll/dsh-task-suite/releases/tag/v1.2.0)
 
-把 Claude 的 `task-*` 任务体系移植到 DeepSeek Harness：一份 Markdown 任务池、一套状态机、主会话调度、后台 worker、机器验收，以及一个只读的可视化面板。
+A port of Claude's `task-*` workflow to DeepSeek Harness: a Markdown task pool, a state machine, a lead session that schedules instead of coding, background workers with fresh context, machine acceptance, and a read-only live dashboard.
 
-它不是又一个 todo list。它解决的是「AI 说完成了，但没人验证」的问题。
+It is not another todo list. It solves the problem that "the AI said it is done, but nobody verified it".
 
-**git 不是必需**：在 git 仓库里用 commit/worktree 验收；在普通目录自动降级为「文件快照模式」，用快照 + 文件清单完成基线比对、改动归属、测试改弱审计和回滚。
+**git is optional**: in a git repo, acceptance uses commits and `git worktree`; in a plain directory it automatically falls back to file snapshots, using a snapshot plus a file manifest for baseline comparison, change attribution, test-weakening audit, and rollback.
 
-## 你现在的 Agent，更像一个随时待命的助理
+## Your agent today behaves like an assistant on call
 
-- **同步**：它做一件，你看一件；想到下一个需求，也得等它空下来。
-- **自评**：测试跑没跑、改动越没越界、测试有没有被改弱，全靠它自己说。
-- **黑盒**：当前在做什么、什么卡住了、还剩多少，翻聊天记录才能猜。
+- **Synchronous**: it does one thing, you watch one thing; the next request waits until it is idle.
+- **Self-reported**: whether tests ran, whether the diff stayed in scope, whether tests were weakened — all you have is its word.
+- **Black box**: what it is doing, what is stuck, how much is left — you dig through the chat log.
 
-不是模型不够聪明，是工作方式还停留在助理模式。真正稀缺的不是模型能力，是**管理能力**。
+The bottleneck is not model capability. It is the working model: assistant mode. What is scarce is **management**, not intelligence.
 
-## 四换，一底线
+## Four swaps, one hard line
 
-| # | 从 | 到 | 解释 |
+| # | From | To | What it means |
 |---|---|---|---|
-| 01 | 助理 | **团队** | 主 Agent 只做 Tech Lead：对话、拆解、调度、验收；具体工作交给独立上下文的 subagent。 |
-| 02 | 对话 | **任务** | 每个需求都有 ID、优先级、验收标准、状态和依赖；按工程交付，不按聊天记录。 |
-| 03 | 同步 | **异步** | 需求可以一次投递多条，进入任务池按序消化；你不必守着对话等它做完一件再提下一件。 |
-| 04 | 黑盒 | **驾驶舱** | 任务、Agent、指标、事件流一屏可见；当前在做什么、什么卡住、什么待确认，一目了然。 |
-| — | 自述 | **证据** | **底线**：worker 说“完成”不算完成；机器重跑测试、比对基线、审计测试改弱，人再做最后确认。 |
+| 01 | Assistant | **Team** | The lead agent acts as tech lead: conversation, breakdown, scheduling, acceptance. The actual work goes to subagents with independent context. |
+| 02 | Conversation | **Task** | Every request gets an ID, priority, acceptance criteria, status, and dependencies. Work is delivered like engineering, not like chat history. |
+| 03 | Synchronous | **Asynchronous** | You can file several requests at once; the pool drains in order. You no longer wait for one task before describing the next. |
+| 04 | Black box | **Cockpit** | Tasks, agents, metrics, and the event stream on one screen: what is running, what is stuck, what needs your confirmation. |
+| — | Self-report | **Evidence** | **The hard line**: "done" from a worker is not done. A machine re-runs the tests, compares against the baseline, audits test weakening, and a human confirms last. |
 
-> “异步”指需求投递与交互异步：你可以连续投递，不必等一条结束；实际执行由流水线按序调度，默认同一时刻一个当前任务，避免并发写坏工作区。
+> "Asynchronous" describes filing and interaction: you can queue requests without waiting. Execution itself stays serial by default — one active task at a time — so two workers never corrupt the same working tree.
 
-## 和普通多 Agent / 任务列表的区别
+## How it differs from generic multi-agent setups
 
-| 维度 | 普通多 Agent / 简单 todo | DSH 任务流水线 |
+| Dimension | Generic multi-agent / todo list | DSH Task Pipeline |
 |---|---|---|
-| 工作单位 | 一段对话、一个 prompt | 有 ID、验收标准和状态的任务 |
-| 谁干活 | 主 Agent 自己，或临时派发 | 独立上下文的 worker，主 Agent 只调度 |
-| 完成标准 | worker 自己说完成 | 机器重跑测试 + 基线比对 + 人确认 |
-| 交互方式 | 同步等待，一次一件 | 需求先入池，按流水线异步消化 |
-| 过程可见 | 翻聊天记录 | 任务 / Agent / 指标 / 事件流 |
-| 存储 | 依赖 git / 数据库 / SaaS | 磁盘上的 Markdown，git 可选 |
+| Unit of work | A conversation, a prompt | A task with ID, acceptance criteria, and status |
+| Who does the work | The lead agent itself, or ad-hoc delegation | A worker with fresh context; the lead only schedules |
+| Definition of done | The worker says so | Machine re-run + baseline diff + human confirmation |
+| Interaction | Synchronous, one at a time | Requests enter a pool and drain as a pipeline |
+| Visibility | Scroll the chat log | Tasks / agents / metrics / event stream |
+| Storage | git, a database, or a SaaS | Markdown on disk; git optional |
 
-**多 Agent 是手段，不是产品。** 没有任务契约、验收门禁和可见性，多 Agent 只是把混乱并行化。
+**Multi-agent is a means, not a product.** Without a task contract, an acceptance gate, and visibility, multi-agent just parallelizes chaos.
 
-## 60 秒上手
+## 60-second quickstart
 
 ```text
 task_init
-task_add items=[{title: "给登录接口加限流", module: "backend", priority: "P1", acceptance: "pytest tests/test_auth.py 通过"}]
+task_add items=[{title: "Rate-limit the login endpoint", module: "backend", priority: "P1", acceptance: "pytest tests/test_auth.py passes"}]
 task_loop action=start max=3 hours=2
-task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
-# subagent 交付后：task_accept report="<报告块>" → task_confirm
+task_loop action=tick        # hand the returned worker_prompt to a subagent
+# after the subagent reports: task_accept report="<report block>" → task_confirm
 ```
 
-然后从右侧栏 `+` 菜单或右下角 **任务流水线** 打开面板，看任务从「待开始」走到「待验证」。
+Then open **Task Pipeline** from the right-sidebar `+` menu or the floating button, and watch a task move from `pending` to `awaiting verification`.
 
-![DSH 任务流水线：主 Agent 调度、后台 Worker 执行、机器验收](docs/screenshots/pipeline-overview.png)
+![DSH Task Pipeline: lead agent schedules, background worker executes, machine accepts](docs/screenshots/pipeline-overview.png)
 
-> 上图是流程示意。下面是从真实会话截取的任务流水线面板：
+> The diagram above is illustrative. Below is the panel captured from a real session:
 
-<img src="docs/screenshots/dashboard-running.png" width="620" alt="任务流水线面板：T-009 运行中、worker、指标与事件流">
+<img src="docs/screenshots/dashboard-running.png" width="620" alt="Task pipeline panel: T-009 running, worker, metrics and event stream">
 
-> 面板包含任务池、Agent、指标和事件流；截图来自真实运行中的 T-009，已裁掉本地工作区路径。待验证状态截图仍待补录，规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
+> The panel includes the task pool, agents, metrics, and the event stream; the screenshot is from a real T-009 run with local paths cropped. The pending-verification screenshot is still to be captured — see [`docs/screenshots/README.md`](docs/screenshots/README.md).
 
-> 宣传画：[自评 vs 机器验收](docs/promo/promo-01.png) · [一条任务，四道关](docs/promo/promo-02.png)
+> Posters: [self-report vs machine acceptance](docs/promo/promo-01.png) · [one task, four gates](docs/promo/promo-02.png)
 
-## 安装
+## Install
 
-npm 安装（推荐）：
+From npm (recommended):
 
 ```sh
 dsh plugin --profile desktop add dsh-task-suite
-# Web profile 用 --profile web
+# use --profile web for the Web profile
 ```
 
-也可以从 GitHub 源码安装：
+Or straight from GitHub:
 
 ```sh
 dsh plugin --profile desktop add qiqll/dsh-task-suite
 ```
 
-> `--profile` 必填：桌面版通常是 `desktop`，Web 版是 `web`；换成你实际使用的 profile 名。
+> `--profile` is required: `desktop` for the desktop app, `web` for the Web build. Use whatever profile name you actually run.
 
-桌面版也可以在 **设置 → 插件** 里搜索 `dsh-task-suite` 安装。首次安装后工具与三个 skill（`task-admin` / `task-loop` / `task-worker`）自动注册。
+You can also install from **Settings → Plugins** by searching for `dsh-task-suite`. Tools and the three skills (`task-admin` / `task-loop` / `task-worker`) register automatically.
 
-**首次安装后必须完整退出并重新打开 DSH。** Web 客户端插件表在进程启动时组合，只刷新页面不会加载新插件的客户端部分；Host 工具和任务池不受影响。之后进入任意会话即可使用。
+**After the first install you must fully quit and reopen DSH.** The Web client plugin graph is composed at process start; a page refresh does not load the client half of a new plugin. Host tools and the task pool are unaffected. After that, any session works.
 
-本地开发时把本目录 `link:` 到 profile 的依赖里；Host 代码可禁用/启用插件行热重载，客户端 UI 改动仍需重启一次。
+For local development, `link:` this directory into the profile's dependencies; disabling/enabling the plugin row hot-reloads the Host side, while client UI changes still need one full restart.
 
-## Web 任务流水线
+## Web dashboard
 
-中文名：**DSH 任务流水线**。插件带一个只读面板，把任务池、当前 worker、门禁和运行指标集中到右侧栏。
+**Task Pipeline** is a read-only dashboard that gathers the task pool, the current worker, the gates, and runtime metrics in the right sidebar.
 
-打开方式（进入任意会话后）：
+Two ways to open it (from any session):
 
-- 右下角浮动按钮 **任务流水线**（最直接）；
-- 右侧栏顶部的 **+** 菜单 → **任务流水线**。
+- the floating **Task Pipeline** button at the bottom right (the most direct one);
+- the **+** menu at the top of the right sidebar → **Task Pipeline**.
 
-面板每 5 秒刷新，包含：
+It refreshes every 5 seconds and shows:
 
-- **循环状态**：运行中 / 已停止 / 已叫停 / 空闲；
-- **当前任务**：`T-xxx`、阶段、worker、已运行时间、快照/基线、门禁备注、inbox 数量；
-- **指标**：完成率、一次通过率、7 日吞吐、中位周期（CLAIM → CONFIRM）、WIP、待验证；
-- **任务清单**：按状态筛选，点开看备注/依赖/验收标准；
-- **Agent**：主 agent 与当前子 agent 的活动状态；
-- **最近流水**：运行日志里的 claim / done / confirm / reject / stop。
+- **Loop state**: running / stopped / halted / idle;
+- **Current task**: `T-xxx`, phase, worker, uptime, snapshot/baseline, gate notes, inbox count;
+- **Metrics**: completion rate, first-pass rate, 7-day throughput, median cycle time (CLAIM → CONFIRM), WIP, awaiting verification;
+- **Task list**: filter by status; expand for notes, dependencies, acceptance criteria;
+- **Agents**: activity of the lead agent and the current subagent;
+- **Recent activity**: claim / done / confirm / reject / stop from the run log.
 
-UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)，但它是**软依赖**：没有安装时任务工具、API、任务池全部正常，只是没有这个面板；Web 也不会因此启动失败。
+The UI depends on [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar), but only as a **soft dependency**: without it, tools, the API, and the task pool all work — you just lose the panel, and the Web app still boots.
 
-数据来自插件注册的只读接口 `GET /dsh-task-suite/state?sessionId=…&cwd=…`，不会修改任务池。
+Data comes from a read-only endpoint the plugin registers: `GET /dsh-task-suite/state?sessionId=…&cwd=…`. It never mutates the pool.
 
-## 插件市场
+## Plugin market
 
-本插件已收录进 [awesome-dsh-plugin](https://awesome-dsh-plugin.com)（分类 `workflow`，源码目录见 [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)）；市场卡片、安装与更新由该目录和 npm 版本驱动。
+Listed in [awesome-dsh-plugin](https://awesome-dsh-plugin.com) (category `workflow`, source in [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)); cards, installs, and updates are driven by that directory and npm versions.
 
-详情页的 AppStore 风格截图来自仓库根目录的 [`screenshots.json`](screenshots.json)，共 3 张（面板总览、运行中、流程示意），文件在 [`docs/screenshots/`](docs/screenshots/)。改图只需改这个 JSON，不必重新发版。
+The App Store–style screenshots on the detail page come from [`screenshots.json`](screenshots.json) at the repo root: three images (panel overview, running, pipeline diagram) stored in [`docs/screenshots/`](docs/screenshots/). Changing a screenshot only needs an edit to that JSON — no new release.
 
-## 快速开始
+## Quick start
 
 ```text
-task_init                                   # 建 .dsh/tasks/（git 仓库里顺带写 .gitignore）
+task_init                                   # creates .dsh/tasks/ (and adds it to .gitignore in a git repo)
 task_add items=[{title, module, priority, deps, acceptance, note}]
-task_status                                 # 全局视图 / 待决策 / 阻塞 / 流水
-task_pick mode=manual task_id=T-001         # 手动单步，自己实施
-task_accept report="<报告块>"               # 机器验收
-task_confirm task_id=T-001 conclusion="..." # 需求方确认后归档
+task_status                                 # global view / decisions / blockers / activity
+task_pick mode=manual task_id=T-001         # single step: pick and implement yourself
+task_accept report="<report block>"         # machine acceptance
+task_confirm task_id=T-001 conclusion="..." # archive after the requester confirms
 ```
 
-自动循环（推荐）：
+Automatic loop (recommended):
 
 ```text
 task_loop action=start max=10 hours=8
-task_loop action=tick        # 返回 worker_prompt
-# 把 worker_prompt 原样交给 subagent 工具；然后结束回合等完成通知
-# 收到 worker 的最后一条消息后：
-task_accept report="<整段报告块>"
-# 通过 → 待验证；需求方确认 → task_confirm；不通过 → task_reject
-task_loop action=tick        # 派下一个
+task_loop action=tick        # returns worker_prompt
+# hand worker_prompt to the subagent tool as-is; then end the turn and wait for the completion notice
+# after the worker's last message:
+task_accept report="<the whole report block>"
+# pass → awaiting verification; requester confirms → task_confirm; otherwise → task_reject
+task_loop action=tick        # dispatch the next one
 ```
 
-停机：`task_loop action=stop reason="..."`；中途叫停：先 `interrupt_agent` 再
-`task_loop action=halt`（保留提交，不回滚）。叫停后继续用 `action=resume`
-（同一任务带断点重派），放回队列用 `action=requeue`。
+Stopping: `task_loop action=stop reason="..."`. Interrupting mid-flight: `interrupt_agent` first, then
+`task_loop action=halt` (keeps commits, no rollback). Continue with `action=resume`
+(re-dispatch the same task from its checkpoint) or `action=requeue` to put it back.
 
-## 状态与目录
+## State and layout
 
 ```text
 .dsh/tasks/
-├── backlog.md          # 需求方入口：P0–P3 表、待决策、人工阻塞、ID 规则
-├── dev-plan.md         # AI 维护：当前批次、进行中、技术前置
-├── dev-progress.md     # 已完成归档（按月）
-├── inbox/              # 需求方/调度方投递（task_*.json），merge 后移到 .merged/
-└── auto/               # 运行时状态，整目录 gitignore
-    ├── current.json    # 当前任务：nonce / startSha / 脏文件 / 阶段
-    ├── session.json    # 循环会话：active / max / hours / done / noprog
-    ├── run.log         # 运行流水
-    ├── STOP            # 停机标记
-    └── snapshots/      # 非 git 模式：开工快照 + manifest（确认后删）
+├── backlog.md          # requester entry point: P0–P3 tables, decisions, manual blockers, ID rules
+├── dev-plan.md         # maintained by the agent: current batch, in progress, prerequisites
+├── dev-progress.md     # archive of completed work (by month)
+├── inbox/              # deliveries from the requester/scheduler (task_*.json), moved to .merged/ after merge
+└── auto/               # runtime state, gitignored as a whole
+    ├── current.json    # current task: nonce / startSha / dirty files / phase
+    ├── session.json    # loop session: active / max / hours / done / noprog
+    ├── run.log         # activity log
+    ├── STOP            # stop marker
+    └── snapshots/      # non-git mode: start snapshot + manifest (deleted after confirm)
         └── T-001-<nonce>/
             ├── manifest.json
             └── files/
 ```
 
-git 仓库里 `task_init` 会把 `.dsh/tasks/` 加入 `.gitignore`；非 git 目录不创建 `.gitignore`。任务池是运行态，不进业务提交。
-每个工作区独立一份池；默认不碰 Claude 的 `.claude/` 池。
+In a git repo, `task_init` adds `.dsh/tasks/` to `.gitignore`; in a non-git directory it creates no `.gitignore`. The pool is runtime state and never enters business commits.
+Each working directory has its own pool; Claude's `.claude/` pool is left untouched.
 
-状态机：
+State machine:
 
 ```text
-待开始 → 进行中 → 待验证 → 已完成
-             └→ 阻塞 / 待决策 → 待开始
-             └→ 打回 → 进行中
+pending → in progress → awaiting verification → done
+             └→ blocked / needs decision → pending
+             └→ rejected → in progress
 ```
 
-同一时刻只允许一个「进行中」；P0 可中断（旧任务记断点）。
+At most one task is "in progress" at a time; P0 can interrupt (the old task records a checkpoint).
 
-## 工具
+## Tools
 
-| 工具 | 作用 | 关键参数 |
+| Tool | Purpose | Key parameters |
 |---|---|---|
-| `task_init` | 初始化池 + `.gitignore` | — |
-| `task_add` | 录入 1..N 条，自动判重/ID/依赖/验收 | `items[]`, `source` |
-| `task_status` | 全局视图与下一步建议 | — |
-| `task_list` | 按状态/优先级/关键词筛选 | `status`, `priority`, `query` |
-| `task_show` | 单任务完整简报 | `task_id` |
-| `task_pick` | 认领任务；auto 返回 worker_prompt | `mode`(auto/manual), `task_id`, `interrupt` |
-| `task_accept` | 机器验收 worker 报告 | `report`, `rollback` |
-| `task_confirm` | 需求方确认 → 归档 | `task_id`, `conclusion`, `gate` |
-| `task_reject` | 需求方打回 → 待开始 | `task_id`, `reason` |
-| `task_answer` | 答复待决策/阻塞，回到待开始 | `task_id`, `answer` |
-| `task_inbox` | 投递需求/决策（worker 在跑时用） | `type`, `text`, `title`, `ref` |
-| `task_merge` | 立即合并 inbox | — |
-| `task_loop` | 循环状态机 | `action`, `max`, `hours`, `reason` |
-| `task_verify` | 只读重跑测试 + 基线比对 + 改弱审计 | `test_cmd`, `start_sha` |
-| `task_audit` | 只读审计提交归属/越界/脏文件/改弱 | `start_sha`, `task_id` |
+| `task_init` | Initialize the pool + `.gitignore` | — |
+| `task_add` | Add 1..N tasks; auto dedupe/ID/deps/acceptance | `items[]`, `source` |
+| `task_status` | Global view and next-step suggestions | — |
+| `task_list` | Filter by status/priority/keyword | `status`, `priority`, `query` |
+| `task_show` | Full brief for one task | `task_id` |
+| `task_pick` | Claim a task; auto mode returns a worker_prompt | `mode`(auto/manual), `task_id`, `interrupt` |
+| `task_accept` | Machine-accept a worker report | `report`, `rollback` |
+| `task_confirm` | Requester confirms → archive | `task_id`, `conclusion`, `gate` |
+| `task_reject` | Requester rejects → back to pending | `task_id`, `reason` |
+| `task_answer` | Answer a decision/blocker → back to pending | `task_id`, `answer` |
+| `task_inbox` | Deliver a request/decision (while a worker runs) | `type`, `text`, `title`, `ref` |
+| `task_merge` | Merge the inbox immediately | — |
+| `task_loop` | Loop state machine | `action`, `max`, `hours`, `reason` |
+| `task_verify` | Read-only re-run + baseline comparison + weakening audit | `test_cmd`, `start_sha` |
+| `task_audit` | Read-only audit of commits/scope/dirty files/weakening | `start_sha`, `task_id` |
 
-`task_loop` 的 action：`start` / `tick` / `stop` / `halt` / `resume` / `requeue` / `status`。
+`task_loop` actions: `start` / `tick` / `stop` / `halt` / `resume` / `requeue` / `status`.
 
-## Worker 报告契约
+## Worker report contract
 
-worker 最后一条消息只输出：
+The worker's last message contains only:
 
 ```text
 === TASK-AUTO REPORT ===
-NONCE: <current.json 的口令>
+NONCE: <the nonce from current.json>
 RESULT: DONE | NEEDS_DECISION | BLOCKED | BASELINE_RED | FAILED | GATE_PENDING_REVIEW
 TASK: T-001
-START_SHA: <开工 SHA>
+START_SHA: <start SHA>
 COMMITS: <sha...>
-TEST_CMD: <[cd dir &&] 单条测试命令 路径...>
-TEST_RESULT: 基线 x passed, y failed → 交付后 z passed, w failed；既有失败：...
-TEST_CHANGES: 仅新增 / 无改动 / 有修改（说明）
-GATE: <code-reviewer H×n M×n；跳过原因；...>
-ACCEPTANCE: <对照验收标准>
+TEST_CMD: <[cd dir &&] a single test command with paths...>
+TEST_RESULT: baseline x passed, y failed → after delivery z passed, w failed; pre-existing failures: ...
+TEST_CHANGES: new tests only / no changes / modified (explain)
+GATE: <code-reviewer H×n M×n; skipped reason; ...>
+ACCEPTANCE: <against the acceptance criteria>
 ASSUMPTIONS: — / ...
-DECISION: — / 问题 / 选项 / 推荐
+DECISION: — / question / options / recommendation
 BLOCKER: — / ...
 DERIVED:
-- [P2] 标题 | 涉及文件 ... | 来源 ...
+- [P2] title | files ... | source ...
 BRIEF:
-给需求方的 1–3 句人话说明
+1–3 plain-language sentences for the requester
 === END REPORT ===
 ```
 
-`task_accept` 会校验 nonce、任务归属、阶段、提交信息里的任务 ID、脏文件、
-测试范围与基线失败集合、测试是否被改弱、高风险路径；通过后把任务落到
-「待验证」并生成衍生任务，失败则按 RESULT 进入待决策 / 阻塞 / 自动失败计数。
+`task_accept` validates the nonce, task ownership, phase, task ID in commit messages, dirty files,
+test scope and the baseline failure set, whether tests were weakened, and high-risk paths. On success the task moves to
+"awaiting verification" and derived tasks are recorded; on failure it routes by RESULT to decision / blocked / automatic failure counting.
 
-`GATE_PENDING_REVIEW` 时验收暂停在 `review_pending`：调度员自己看 `start_sha..HEAD`，
-通过就再调用 `task_accept` 并传 `review="pass: ..."`（同一报告即可），验收继续；
-不通过就把发现发回 worker 修复并重交。
+With `GATE_PENDING_REVIEW`, acceptance pauses in `review_pending`: the scheduler reviews `start_sha..HEAD` and,
+if it passes, calls `task_accept` again with `review="pass: ..."` (same report); otherwise the findings go back to the worker.
 
-## 两种基线模式
+## Two baseline modes
 
-`mode` 默认 `auto`：能拿到 git HEAD 就用 git 模式，否则自动用文件模式；也可以强制 `mode: file` / `mode: git`。
+`mode` defaults to `auto`: use git mode when a git HEAD exists, otherwise fall back to file mode; you can force `mode: file` or `mode: git`.
 
-| | git 模式 | 文件模式（非 git 目录） |
+| | git mode | file mode (non-git directory) |
 |---|---|---|
-| 开工基线 | `START_SHA` | `auto/snapshots/<T-NNN>-<nonce>/` 全量快照 + `manifest.json` |
-| 改动归属 | commit message 含任务 ID | 快照与当前目录的文件差异（新增/修改/删除） |
-| 基线测试 | `git worktree` 回到 START_SHA | 快照复制到临时目录，回放开工时代码 |
-| 回滚 | `git reset --keep START_SHA` + ref | 从快照恢复文件，恢复前再备份当前树 |
-| 提交要求 | 每个 commit 带任务 ID | 不 commit；`COMMITS: —` |
-| 局限 | 要求有 HEAD | 无法区分「谁改的」；快照占磁盘；依赖目录/构建产物被排除 |
+| Start baseline | `START_SHA` | `auto/snapshots/<T-NNN>-<nonce>/` full snapshot + `manifest.json` |
+| Change attribution | task ID in commit messages | file diff (added/modified/deleted) against the snapshot |
+| Baseline tests | `git worktree` at START_SHA | snapshot copied to a temp dir, replaying the starting code |
+| Rollback | `git reset --keep START_SHA` + ref | restore files from the snapshot, backing up the current tree first |
+| Commit requirement | every commit carries the task ID | no commits; `COMMITS: —` |
+| Limits | requires a HEAD | cannot tell "who changed it"; snapshots cost disk; dependency/build dirs excluded |
 
-快照默认排除 `.git`、`node_modules`、`.venv`/`venv`、`__pycache__`、`dist`/`build`、`.dsh/tasks` 等。项目很大时用 `snapshotIgnore` 排除更多目录，或调大 `snapshotMaxBytes` / `snapshotMaxFiles`。任务确认/打回后快照会删除，并默认只保留最近 10 份。
+Snapshots exclude `.git`, `node_modules`, `.venv`/`venv`, `__pycache__`, `dist`/`build`, `.dsh/tasks`, etc. For large projects use `snapshotIgnore`, or raise `snapshotMaxBytes` / `snapshotMaxFiles`. Snapshots are deleted on confirm/reject, and only the latest 10 are kept by default.
 
-文件模式的 `TEST_CMD`、测试改弱审计、nonce、遗留文件检查与 git 模式完全一致；只是「提交归属」换成「快照差异归属」。
+File mode keeps `TEST_CMD`, the weakening audit, the nonce, and the leftover-file check identical to git mode; only "commit attribution" becomes "snapshot diff attribution".
 
-## 验收与防作弊
+## Acceptance and anti-cheating
 
-- **nonce**：每次 claim 生成一次性口令，旧报告/重复通知直接丢弃。
-- **提交归属**（git）：`git log START_SHA..HEAD` 里每个 commit 的 message 必须含任务 ID；出现别人的 commit → 停下，不自动处理。
-- **改动归属**（文件）：与开工快照比对，新增/修改/删除都列出；报告 `CHANGES` 与实际不符会告警。
-- **基线比对**：当前测试失败时，在 `git worktree` 的 START_SHA（git）或快照副本（文件）上重跑同一命令，只有「基线也失败」的用例才算既有失败；新失败 → 打回。
-- **测试范围**：`TEST_CMD` 必须是单条命令，禁止 `; | & $( > <` 与
-  `-k/--deselect/--ignore/--lf/--collect-only/--passWithNoTests`；
-  改动/删除的测试文件必须落在命令路径参数覆盖范围内。
-- **改弱审计**：删除用例、移走文件、skip/xfail、注释断言、断言净减少、
-  测试配置 ignore 都会产生告警；DONE 带告警 → 转「待决策」。
-- **高风险路径**：认证、支付、迁移、部署、CI、依赖清单等；命中时要求报告写
-  `GATE` 与 `ASSUMPTIONS`，否则转人工 review。
+- **nonce**: every claim mints a one-time token; stale reports or duplicate notices are discarded.
+- **Commit attribution** (git): every commit in `git log START_SHA..HEAD` must mention the task ID; a foreign commit stops acceptance for manual handling.
+- **Change attribution** (file): compare against the start snapshot and list added/modified/deleted files; a mismatch with the report's `CHANGES` raises a warning.
+- **Baseline comparison**: when current tests fail, re-run the same command on the `git worktree` at START_SHA (git) or on the snapshot copy (file); only cases that also fail at baseline count as pre-existing. New failures → rejected.
+- **Test scope**: `TEST_CMD` must be a single command; `; | & $( > <` and
+  `-k/--deselect/--ignore/--lf/--collect-only/--passWithNoTests` are rejected;
+  any modified/deleted test file must be covered by the command's path arguments.
+- **Weakening audit**: deleted cases, moved files, skip/xfail, commented assertions, a net decrease in assertions,
+  and test-config ignores all raise warnings; DONE with warnings → needs decision.
+- **High-risk paths**: auth, payments, migrations, deployment, CI, dependency manifests, etc.; when hit, the report must include
+  `GATE` and `ASSUMPTIONS`, otherwise it goes to manual review.
 
-## 配置
+## Configuration
 
-`cordis.patch.yml` 的 `config` 可覆盖：
+Override in `cordis.patch.yml` under `config`:
 
-| 键 | 默认 | 说明 |
+| Key | Default | Meaning |
 |---|---|---|
-| `stateDir` | `.dsh/tasks` | 相对项目根 |
-| `testTimeoutSec` | `900` | 单次测试超时 |
-| `defaultMaxTasks` | `10` | 循环最多交付数 |
-| `defaultMaxHours` | `8` | 循环最长小时数 |
-| `maxNoprog` | `3` | 连续无进展自动停机 |
-| `maxDerivedPerParent` | `3` | 单任务衍生上限 |
-| `maxDerivedDepth` | `2` | 衍生层级上限 |
-| `mode` | `auto` | `auto` / `git` / `file`；强制文件模式可让 git 仓库也走快照 |
-| `snapshotIgnore` | `[]` | 额外排除的相对路径或 `*` glob |
-| `snapshotMaxBytes` | `536870912` | 单次快照体积上限（512MB） |
-| `snapshotMaxFiles` | `20000` | 单次快照文件数上限 |
-| `snapshotKeep` | `10` | 保留最近多少份快照 |
+| `stateDir` | `.dsh/tasks` | Relative to the project root |
+| `testTimeoutSec` | `900` | Per-run test timeout |
+| `defaultMaxTasks` | `10` | Max tasks delivered per loop |
+| `defaultMaxHours` | `8` | Max hours per loop |
+| `maxNoprog` | `3` | Consecutive no-progress rounds before auto-stop |
+| `maxDerivedPerParent` | `3` | Derived tasks per parent |
+| `maxDerivedDepth` | `2` | Derived depth limit |
+| `mode` | `auto` | `auto` / `git` / `file`; force `file` to use snapshots even in a git repo |
+| `snapshotIgnore` | `[]` | Extra relative paths or `*` globs to exclude |
+| `snapshotMaxBytes` | `536870912` | Snapshot size cap (512 MB) |
+| `snapshotMaxFiles` | `20000` | Snapshot file-count cap |
+| `snapshotKeep` | `10` | Number of recent snapshots to keep |
 
-## 与 Claude 版的差异
+## Differences from the Claude version
 
-- 状态目录是 `.dsh/tasks/`（DSH 独立运行态），不是 `.claude/`。
-- 调度用 DSH 的 `subagent` 工具；没有内置心跳/cron，长循环可用
-  `schedule_create` 定时提醒主会话 `tick`。
-- 机器验收在原 `verify_tests.sh` / `check_test_weakening.sh` 的基础上重写为
-  Node 实现，判定口径保持一致。
-- 提供只读 Web 面板；`backlog.md` 仍是任务池的唯一事实来源。
+- The state directory is `.dsh/tasks/` (DSH runtime state), not `.claude/`.
+- Scheduling uses DSH's `subagent` tool; there is no built-in heartbeat/cron, so long loops can use
+  `schedule_create` to remind the lead session to `tick`.
+- Machine acceptance is a Node rewrite of the original `verify_tests.sh` / `check_test_weakening.sh`, with the same verdicts.
+- Adds a read-only Web panel; `backlog.md` remains the single source of truth.
 
-## 开发自测
+## Development
 
 ```bash
 cd dsh-task-suite
 node selftest.mjs
 ```
 
-自测覆盖两种模式：
+The self-test covers both modes:
 
-- git：建池/录入/解析、认领、报告解析、DONE 验收与归档、FAIL_NEW 基线比对、测试改弱、inbox、待决策、循环启停、halt/resume/requeue；
-- 非 git：快照认领、快照差异归属、DONE 验收、FAIL_NEW 基线、测试改弱、失败回滚。
+- git: init/add/parse, claim, report parsing, DONE acceptance and archiving, FAIL_NEW baseline comparison, test weakening, inbox, decisions, loop start/stop, halt/resume/requeue;
+- non-git: snapshot claim, snapshot diff attribution, DONE acceptance, FAIL_NEW baseline, test weakening, rollback on failure.

@@ -1,0 +1,34 @@
+name: version-check
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 插件自测
+        run: node selftest.mjs
+
+      - name: 面板自测
+        run: node test-dashboard.mjs
+
+      - name: CLI 自测
+        run: node bin/dsh-task --selftest
+
+      - name: 版本一致性（package / CHANGELOG / README / tag）
+        run: node scripts/check-version.mjs
+
+      - name: npm 包内容自检
+        run: npm pack --dry-run

@@ -1,0 +1,80 @@
+name: Bug report
+description: 报告一个可复现的问题（安装失败、任务卡住、面板异常等）
+title: '[bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        中文或英文都可以。提问 / 想法请走 [Discussions](https://github.com/qiqll/dsh-task-suite/discussions)，这里只收可复现的问题。
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: 插件版本
+      description: '`dsh plugin --profile <name> list` 或 `npm view dsh-task-suite version`'
+      placeholder: 1.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本与 profile
+      description: 桌面版 / Web 版，profile 名（desktop / web / 自定义）
+      placeholder: 0.2.1 desktop
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 出问题的区域
+      options:
+        - 安装 / 升级 / 卸载
+        - 任务池（task_add / task_status / 状态机）
+        - 调度循环（task_loop）
+        - 机器验收（task_accept / task_verify）
+        - 面板（任务流水线）
+        - dsh-task CLI
+        - 文档
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. task_init
+        2. task_add items=[...]
+        3. task_loop action=start
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果 / 实际结果
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 日志与截图
+      description: '`.dsh/tasks/auto/run.log` 相关片段、报错原文、面板截图。**发之前删掉 API Key、token、私人路径。**'
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 已搜索过现有 issue，没有重复
+          required: true
+        - label: 日志/截图里没有 API Key、token、私人路径
+          required: true

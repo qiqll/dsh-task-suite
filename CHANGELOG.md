@@ -2,6 +2,32 @@
 
 本文件记录 `dsh-task-suite` 的重要变更。版本号遵循 [semver](https://semver.org/)；`package.json` 的 `version` 是 npm 上用于判断更新的版本。
 
+## 1.2.0 — 2026-11-26
+
+发布工程化版本：把「能发」和「发对了」变成 CI 可验证的流程，并让仓库对英文用户可读。
+
+### Added
+
+- **双语 README**：`README.md` 为英文（npm / GitHub 默认展示），`README.zh-CN.md` 为中文原版，两边顶部互相链接；npm 包同时带上两份。
+- **版本一致性检查** `scripts/check-version.mjs`：校验 `package.json`、`CHANGELOG.md` 最新条目、两份 README 的 Release 链接、`files[]` 是否含中文 README，以及 CI 上的 `v*` tag 是否与版本号一致。
+- **GitHub Actions** `.github/workflows/version-check.yml`：push / PR / tag 时跑插件自测、面板自测、CLI 自测、版本一致性与 `npm pack --dry-run`。
+- **Issue 模板**：`bug_report.yml`、`feature_request.yml`、`config.yml`（引导使用问题去 Discussions）。
+- **发布脚本** `scripts/release.sh`：幂等地完成 push → npm publish → tag → GitHub Release，已完成的步骤自动跳过，支持 `--dry-run`。
+- `npm run test:all`：一次跑完插件、面板、CLI 三套自测与版本检查。
+
+### Changed
+
+- 默认 README 语言从中文改为英文；中文内容完整保留在 `README.zh-CN.md`，不再是「只有中文」的单语仓库。
+- `package.json` 的 `files[]` 增加 `README.zh-CN.md`。
+
+### 升级
+
+```sh
+dsh plugin --profile desktop add dsh-task-suite
+```
+
+行为与 1.1.2 一致，本版本没有运行时变更；升级后可完整重启一次 DSH 让面板刷新。
+
 ## 1.1.2 — 2026-11-25
 
 验收语义对齐 claude-task 0.3.12 / 0.3.13，并补齐市场投稿所需的清单与素材：
