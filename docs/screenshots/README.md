@@ -12,6 +12,8 @@
 | `dashboard-verify.png` | 已有 | 真实「待验证」态：T-018 展开显示验收标准、怎么验与默认通过日；1126×1662，无本地路径 |
 | `dashboard.gif` | 可选 | 60 秒演示，见 `docs/demo.md` |
 
+**当前状态（2026-11-26）**：4 张 PNG 已全部就位，`dashboard-verify.png` 是 T-018 处于「待验证」时从真实面板截的（验收标准 + 怎么验 + 默认通过日同屏）。`dashboard.gif` 仍为可选项，没有也能发布；补录后加到本表并在 `docs/demo.md` 里对齐分镜即可。
+
 仓库根目录的 [`screenshots.json`](../../screenshots.json) 是 dsh-market 详情页截图的唯一来源：路径相对该文件、指向本目录已有 PNG，1–8 张。市场展示顺序即数组顺序（当前为 `dashboard-overview` → `dashboard-running` → `dashboard-verify` → `pipeline-overview`）；增删截图时同步更新该文件。
 
 ## 录制要求
