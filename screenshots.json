@@ -2,6 +2,7 @@
   "screenshots": [
     "docs/screenshots/dashboard-overview.png",
     "docs/screenshots/dashboard-running.png",
+    "docs/screenshots/dashboard-verify.png",
     "docs/screenshots/pipeline-overview.png"
   ]
 }

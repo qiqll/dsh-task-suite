@@ -70,7 +70,7 @@ Then open **Task Pipeline** from the right-sidebar `+` menu or the floating butt
 
 <img src="docs/screenshots/dashboard-running.png" width="620" alt="Task pipeline panel: T-009 running, worker, metrics and event stream">
 
-> The panel includes the task pool, agents, metrics, and the event stream; the screenshot is from a real T-009 run with local paths cropped. The pending-verification screenshot is still to be captured — see [`docs/screenshots/README.md`](docs/screenshots/README.md).
+> The panel includes the task pool, agents, metrics, and the event stream; the screenshot is from a real T-009 run with local paths cropped. The pending-verification state (acceptance criteria, how to verify, default-pass date) is captured in [`dashboard-verify.png`](docs/screenshots/dashboard-verify.png).
 
 > Posters: [self-report vs machine acceptance](docs/promo/promo-01.png) · [one task, four gates](docs/promo/promo-02.png)
 
@@ -123,7 +123,7 @@ Data comes from a read-only endpoint the plugin registers: `GET /dsh-task-suite/
 
 Listed in [awesome-dsh-plugin](https://awesome-dsh-plugin.com) (category `workflow`, source in [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)); cards, installs, and updates are driven by that directory and npm versions.
 
-The App Store–style screenshots on the detail page come from [`screenshots.json`](screenshots.json) at the repo root: three images (panel overview, running, pipeline diagram) stored in [`docs/screenshots/`](docs/screenshots/). Changing a screenshot only needs an edit to that JSON — no new release.
+The App Store–style screenshots on the detail page come from [`screenshots.json`](screenshots.json) at the repo root: four images (panel overview, running, pending verification, pipeline diagram) stored in [`docs/screenshots/`](docs/screenshots/). Changing a screenshot only needs an edit to that JSON — no new release.
 
 ## Quick start
 

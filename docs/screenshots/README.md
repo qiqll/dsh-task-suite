@@ -9,10 +9,10 @@
 | `dashboard-overview.png` | 已有 | 真实面板：任务池、Agent、指标、事件流；1130×1505，已裁掉工作区路径 |
 | `dashboard-running.png` | 已有 | 真实 T-009 运行中：当前任务、worker、指标、事件流；1128×1536，无本地路径 |
 | `pipeline-overview.png` | 已有 | 流程示意：主 Agent 调度 → 后台 worker → 机器验收；2560×1120 |
-| `dashboard-verify.png` | 待录 | 有 1 个「待验证」任务，显示验收通过/待确认 |
+| `dashboard-verify.png` | 已有 | 真实「待验证」态：T-018 展开显示验收标准、怎么验与默认通过日；1126×1662，无本地路径 |
 | `dashboard.gif` | 可选 | 60 秒演示，见 `docs/demo.md` |
 
-仓库根目录的 [`screenshots.json`](../../screenshots.json) 是 dsh-market 详情页截图的唯一来源：路径相对该文件、指向本目录已有 PNG，1–8 张。市场展示顺序即数组顺序（当前为 `dashboard-overview` → `dashboard-running` → `pipeline-overview`）；增删截图时同步更新该文件。
+仓库根目录的 [`screenshots.json`](../../screenshots.json) 是 dsh-market 详情页截图的唯一来源：路径相对该文件、指向本目录已有 PNG，1–8 张。市场展示顺序即数组顺序（当前为 `dashboard-overview` → `dashboard-running` → `dashboard-verify` → `pipeline-overview`）；增删截图时同步更新该文件。
 
 ## 录制要求
 

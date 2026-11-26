@@ -70,7 +70,7 @@ task_loop action=tick        # 把返回的 worker_prompt 交给 subagent
 
 <img src="docs/screenshots/dashboard-running.png" width="620" alt="任务流水线面板：T-009 运行中、worker、指标与事件流">
 
-> 面板包含任务池、Agent、指标和事件流；截图来自真实运行中的 T-009，已裁掉本地工作区路径。待验证状态截图仍待补录，规范见 [`docs/screenshots/README.md`](docs/screenshots/README.md)。
+> 面板包含任务池、Agent、指标和事件流；截图来自真实运行中的 T-009，已裁掉本地工作区路径。「待验证」态（验收标准、怎么验、默认通过日）见 [`dashboard-verify.png`](docs/screenshots/dashboard-verify.png)。
 
 > 宣传画：[自评 vs 机器验收](docs/promo/promo-01.png) · [一条任务，四道关](docs/promo/promo-02.png)
 
@@ -123,7 +123,7 @@ UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)�
 
 本插件已收录进 [awesome-dsh-plugin](https://awesome-dsh-plugin.com)（分类 `workflow`，源码目录见 [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)）；市场卡片、安装与更新由该目录和 npm 版本驱动。
 
-详情页的 AppStore 风格截图来自仓库根目录的 [`screenshots.json`](screenshots.json)，共 3 张（面板总览、运行中、流程示意），文件在 [`docs/screenshots/`](docs/screenshots/)。改图只需改这个 JSON，不必重新发版。
+详情页的 AppStore 风格截图来自仓库根目录的 [`screenshots.json`](screenshots.json)，共 4 张（面板总览、运行中、待验证、流程示意），文件在 [`docs/screenshots/`](docs/screenshots/)。改图只需改这个 JSON，不必重新发版。
 
 ## 快速开始
 
