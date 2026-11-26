@@ -104,7 +104,7 @@ node scripts/check.mjs /tmp/dsh-go-candidate
 
 **标题**：`Add qiqll/dsh-task-suite (npm 1.2.0) and fix stale sitemap URLs returning 404`
 
-**正文**：用 [`docs/marketplace-submissions.md`](../marketplace-submissions.md) §3.3 的「Issue 正文」整段（已按 1.2.0 更新）。核心三点：
+**正文**：直接复制 [`issue-hrhgit.md`](../submissions/issue-hrhgit.md) 里的整段（标题、正文都在里面；论证细节见 [`marketplace-submissions.md`](../marketplace-submissions.md) §3）。核心三点：
 
 1. 仓库已打 `dsh-plugin` topic，npm 有 1.2.0、MIT、公开仓库——但 catalog 的 `generatedAt` 停在 2026-08-14；
 2. 该目录只扫 topic 下最新 1000 个仓库，我们被窗口截断；
@@ -116,7 +116,7 @@ node scripts/check.mjs /tmp/dsh-go-candidate
 
 **打开**：https://github.com/bobby-sheng/dshget-data/issues/new
 
-**正文**：用同文档 §4 的「Issue 正文」（已按 1.2.0 更新）。要说明的是：sitemap 里有 EN/ZH 两个 URL 但都 404，公开快照 `catalog.json` 2460 条里没有我们——属于抓取/快照问题，不是条目不合格。
+**正文**：直接复制 [`issue-dshget.md`](../submissions/issue-dshget.md) 里的整段（论证细节见同文档 §4）。要说明的是：sitemap 里有 EN/ZH 两个 URL 但都 404，公开快照 `catalog.json` 2460 条里没有我们——属于抓取/快照问题，不是条目不合格。
 
 ---
 
