@@ -303,8 +303,11 @@ BRIEF:
 
 ```bash
 cd dsh-task-suite
-node selftest.mjs
+node selftest.mjs       # 插件自测
+npm run test:all        # 插件 + 面板 + CLI + 版本一致性
 ```
+
+CI 在每次 push、PR 和 `v*` tag 上跑同一套四步，配置见 [`.github/workflows/version-check.yml`](.github/workflows/version-check.yml)。
 
 自测覆盖两种模式：
 

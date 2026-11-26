@@ -301,8 +301,11 @@ Override in `cordis.patch.yml` under `config`:
 
 ```bash
 cd dsh-task-suite
-node selftest.mjs
+node selftest.mjs       # plugin self-test
+npm run test:all        # plugin + dashboard + CLI + version check
 ```
+
+CI runs the same four steps on every push, pull request, and `v*` tag — see [`.github/workflows/version-check.yml`](.github/workflows/version-check.yml).
 
 The self-test covers both modes:
 
