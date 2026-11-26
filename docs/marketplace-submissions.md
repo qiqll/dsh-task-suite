@@ -1,7 +1,11 @@
 # 独立插件市场提交材料（T-013）
 
-> 基线：`dsh-task-suite@1.1.1`（npm latest，2026-11-23T11:46:53Z 发布）+ GitHub tag `v1.1.1`（commit `c0c8e427f5ad79e6998842778e21e0148c69a047`）。
-> 核对日期：2026-11-25。文中链接、版本和命令均已直接读取公开接口或本地实跑；本文只准备材料，**没有提交任何 PR/Issue，也没有执行 git add/commit/push**。
+> **2026-11-26 更新**：`1.2.0` 已发布（npm latest、tag `v1.2.0` → `433fcba`、GitHub Release）。本文的版本、commit、日期与校验输出已按 1.2.0 刷新；`1.1.x` 的历史分析保留原样。
+>
+> **想直接动手**：执行顺序看 [`launch/submit-markets.md`](launch/submit-markets.md)，成品载荷在 [`submissions/`](submissions/)。
+
+> 基线：`dsh-task-suite@1.2.0`（npm latest，2026-11-26T12:40:50Z 发布）+ GitHub tag `v1.2.0`（commit `433fcba07cefcd3aae71a6b1ab9d178295412b2e`）。
+> 核对日期：2026-11-26（1.2.0 发布后）。文中链接、版本和命令均已直接读取公开接口或本地实跑；**材料已就绪，提交动作仍由作者本人完成**（本文不代发 PR/Issue）。
 > 中文为主；目标仓库以英文为主的正文已写成英文，可直接复制。
 
 ---
@@ -11,21 +15,21 @@
 | 事实 | 值 | 出处 / 核对方式 |
 |---|---|---|
 | npm 包名 | `dsh-task-suite`（非 scoped） | `https://registry.npmjs.org/dsh-task-suite` |
-| npm latest | `1.1.1` | `dist-tags.latest` |
-| npm 发布时间 | `2026-11-23T11:46:53.551Z` | packument `time["1.1.1"]` |
-| npm license | `MIT` | packument `versions["1.1.1"].license` |
-| npm repository | `git+https://github.com/qiqll/dsh-task-suite.git` | packument `versions["1.1.1"].repository.url` |
-| npm tarball | `https://registry.npmjs.org/dsh-task-suite/-/dsh-task-suite-1.1.1.tgz` | packument `dist.tarball` |
+| npm latest | `1.2.0` | `dist-tags.latest` |
+| npm 发布时间 | `2026-11-26T12:40:50.066Z` | packument `time["1.2.0"]` |
+| npm license | `MIT` | packument `versions["1.2.0"].license` |
+| npm repository | `git+https://github.com/qiqll/dsh-task-suite.git` | packument `versions["1.2.0"].repository.url` |
+| npm tarball | `https://registry.npmjs.org/dsh-task-suite/-/dsh-task-suite-1.2.0.tgz` | packument `dist.tarball` |
 | npm integrity | `sha512-gLiQHqOf+nev9C0i8ebgDBKk5+Ccjt1/dfDSY4WSYqCqKOWdZoAFfy4uZurghL6qy+w56ASH+TYADgDigNHZAg==` | packument `dist.integrity` |
 | npm shasum | `b90cb46062f0750ff4a6017cf84787711011718b` | packument `dist.shasum` |
 | npm 包内容 | 23 个文件，解包 242,071 bytes；含 `package/LICENSE`、`package/cordis.patch.yml` | 下载 tarball 后 `tar -tzf` |
 | GitHub 仓库 | `https://github.com/qiqll/dsh-task-suite`（public，默认分支 `main`） | GitHub API `/repos/qiqll/dsh-task-suite` |
 | GitHub license | `MIT`（SPDX） | GitHub API `license.spdx_id` |
 | GitHub topic | `["dsh-plugin"]`（仅此一个） | GitHub API `topics` |
-| 发布 tag | `v1.1.1` → commit `c0c8e427f5ad79e6998842778e21e0148c69a047` | GitHub API `git/ref/tags/v1.1.1` + `/commits/v1.1.1` |
-| GitHub Release | `https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.1`（2026-11-23T11:45:25Z） | GitHub API `/releases` |
+| 发布 tag | `v1.2.0` → commit `433fcba07cefcd3aae71a6b1ab9d178295412b2e` | GitHub API `git/ref/tags/v1.2.0` + `/commits/v1.2.0` |
+| GitHub Release | `https://github.com/qiqll/dsh-task-suite/releases/tag/v1.2.0`（2026-11-26T12:39:47Z） | GitHub API `/releases` |
 | `dsh` 字段 | `dsh.bundle.patch = "./cordis.patch.yml"`；`dsh.client.platform = "web"`；`dsh.manifestVersion = 1` | tag 内 `package.json` / npm packument |
-| `dshWorkshop` 字段 | npm `1.1.1` **缺失**；本地 `1.1.2` 已补（见 §1.2，尚未发布） | tag `v1.1.1` 内 `package.json` + 本地 `1.1.2` |
+| `dshWorkshop` 字段 | **已包含**（1.1.1 及以前缺失，1.2.0 起在 npm 包里） | npm `1.2.0` packument + tag `v1.2.0` 的 `package.json` |
 | 插件关键词 | `dsh-plugin`, `deepseek-harness`, `task-management`, `task-queue`, `subagent`, `workflow`, `automation`, `orchestration` | tag 内 `package.json` |
 | 本机 DSH 版本 | `0.2.1-rc.5` | `dsh --version` |
 | npm 上 `@deepseek-ai/dsh` latest | `0.2.2-rc.5` | npm registry `dist-tags` |
@@ -37,7 +41,7 @@
 set -e
 
 # 1) npm 版本 / 许可 / 仓库归属 / dsh 字段
-curl -s https://registry.npmjs.org/dsh-task-suite/1.1.1 | python3 -c '
+curl -s https://registry.npmjs.org/dsh-task-suite/1.2.0 | python3 -c '
 import sys, json
 d = json.load(sys.stdin)
 print("version   :", d["version"])
@@ -58,7 +62,7 @@ print("branch :", d["default_branch"])
 '
 
 # 3) 固定 tag 的 package.json（确认 dsh.bundle 与 LICENSE 是否进包）
-curl -s https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.1.1/package.json | python3 -c '
+curl -s https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/package.json | python3 -c '
 import sys, json
 d = json.load(sys.stdin)
 print("version:", d["version"])
@@ -85,7 +89,7 @@ dsh --version
 
 ## 1. OMDSH Hub（hub.omdsh.dev）
 
-### 1.1 结论：1.1.2 已就绪，按此投稿 v2
+### 1.1 结论：1.2.0 已发布，按此投稿 v2
 
 OMDSH 的规则以 `omdsh-dev/dsh-hub-workshop` 的 [`INTAKE.md`](https://github.com/omdsh-dev/dsh-hub-workshop/blob/main/INTAKE.md) 为准：
 
@@ -93,19 +97,19 @@ OMDSH 的规则以 `omdsh-dev/dsh-hub-workshop` 的 [`INTAKE.md`](https://github
 - v2 的 `packageManifest` 必须与固定 commit 的 `package.json#dshWorkshop` **逐值相等**；Issue 自动化会读仓库、读 commit、读声明路径，然后生成 `pending-review` 记录与审核 PR，**不会执行投稿仓库的脚本**。
 - [官方作者指令](https://hub.omdsh.dev/agent-submission-prompt.zh.md)明确要求：如果 `dshWorkshop` 缺失，先生成建议片段并**停止**，等作者审阅、提交、推送新的固定 commit 后再申请。
 
-`1.1.1` 的 `package.json` 只有 `dsh.bundle`，没有 `dshWorkshop`，这是之前的阻塞。**本地 `1.1.2` 已补齐**：`package.json` 顶层已写入 §1.2 的 `dshWorkshop` 对象，`version` 已改为 `1.1.2`，`node selftest.mjs`、`node bin/dsh-task --selftest` 与 `npm pack --dry-run` 均已通过。剩下的只是**手动发布**（§1.2 的命令）和**投稿**（§1.3 的 JSON），不需要再改代码：
+`1.1.1` 及以前的 `package.json` 只有 `dsh.bundle`，没有 `dshWorkshop`，这是之前的阻塞。**`1.2.0` 已补齐并发布**：`package.json` 顶层已写入 §1.2 的 `dshWorkshop` 对象，`version` 已改为 `1.2.0`，`node selftest.mjs`、`node bin/dsh-task --selftest` 与 `npm pack --dry-run` 均已通过。剩下的只是**手动发布**（§1.2 的命令）和**投稿**（§1.3 的 JSON），不需要再改代码：
 
 | 路径 | 状态 | 说明 |
 |---|---|---|
-| 本地补 `dshWorkshop`（1.1.2）→ 发 npm → 投 v2 | ✅ 已就绪 | 本仓库已完成；按 §1.2 发布、按 §1.3 投稿即可，后续审核/验证都按 v2 走 |
-| 只加 manifest 到 `1.1.1`、不重发 npm、用新 commit 投 | ⚠️ 技术上能过 preflight | npm 1.1.1 tarball 与仓库声明不一致，审核可能打回；不推荐 |
+| 本地补 `dshWorkshop` → 发 npm 1.2.0 → 投 v2 | ✅ 已完成 | npm latest 已是 1.2.0（2026-11-26T12:40:50Z），tag `v1.2.0` → `433fcba`；只剩按 §1.3 投稿 |
+| 只加 manifest 到 `1.2.0`、不重发 npm、用新 commit 投 | ⚠️ 技术上能过 preflight | npm 1.2.0 tarball 与仓库声明不一致，审核可能打回；不推荐 |
 | 投 v1 旧格式绕过 | ⚠️ 解析器仍接受 | `INTAKE.md` 只把旧 `dsh.bundle` 当兼容映射，能力/生命周期均为未知，人工审核大概率要求补 v2；不推荐 |
 
-**下面按“已补 manifest → 发 1.1.2 → 投 v2”写。**
+**下面按“已补 manifest → 发 1.2.0 → 投 v2”写。**
 
-### 1.2 发布前置：`dshWorkshop` 已就位，按此发布 1.1.2
+### 1.2 发布记录（1.2.0 已完成，保留供下次复用）
 
-`package.json` 顶层已有 `"dshWorkshop"` 键（与 `dsh` 同级），值就是下面这个完整对象；`packageManifest` 必须与它完全一致。**本片段已写入 1.1.2 的 `package.json`**，此处保留作为投稿前的核对基线（`package.json#dshWorkshop` 与 §1.3 的 `packageManifest` 应当逐值相等）：
+`package.json` 顶层已有 `"dshWorkshop"` 键（与 `dsh` 同级），值就是下面这个完整对象；`packageManifest` 必须与它完全一致。**本片段已写入 1.2.0 的 `package.json`**，此处保留作为投稿前的核对基线（`package.json#dshWorkshop` 与 §1.3 的 `packageManifest` 应当逐值相等）：
 
 ```json
 {
@@ -160,7 +164,7 @@ OMDSH 的规则以 `omdsh-dev/dsh-hub-workshop` 的 [`INTAKE.md`](https://github
 - `capability.id = task_status`：审核适配器必须实际调用一次 `task_status` 并观察到任务池视图，不能只证明“加载成功”。
 - `evidence` 全为 `null`：目前没有 RC.6 的安装/升级/禁用/移除/失败隔离证据文件，如实留空，等待审核阶段补。
 
-发布并固定新 commit（**手动执行，本文不代跑**；发布物已是 `1.1.2`）：
+发布并固定新 commit（**1.2.0 已于 2026-11-26 执行完成**，下面是可复用的原始步骤）：
 
 ```sh
 # 1) 确认 package.json 仍是合法 JSON，且 dshWorkshop 与 §1.3 的 packageManifest 一致
@@ -171,26 +175,26 @@ node selftest.mjs
 node bin/dsh-task --selftest
 npm pack --dry-run --cache /tmp/npm-cache-t019   # 确认含 package.json / LICENSE / bin/dsh-task / cordis.patch.yml
 
-# 2) 提交、推送、发布 1.1.2（由作者手动执行）
+# 2) 提交、推送、发布（1.2.0 已执行；下次改版本号复用）
 git add dsh-task-suite/package.json dsh-task-suite/CHANGELOG.md dsh-task-suite/docs/marketplace-submissions.md
-git commit -m "feat: declare OMDSH workshop manifest and ship 1.1.2"
+git commit -m "feat: declare OMDSH workshop manifest and ship 1.2.0"
 git push origin main
 npm publish
-git tag v1.1.2
-git push origin v1.1.2
-# 在 GitHub 创建 Release v1.1.2（§1.3 的 changelog 链接需要它）
-gh release create v1.1.2 --title v1.1.2 --notes "OMDSH workshop manifest"   # 或网页创建
+git tag v1.2.0
+git push origin v1.2.0
+# 在 GitHub 创建 Release v1.2.0（§1.3 的 changelog 链接需要它）
+gh release create v1.2.0 --title v1.2.0 --notes "OMDSH workshop manifest"   # 或网页创建
 
 # 3) 记录投稿用的固定 commit 与日期（§1.3 的 __REF__ / __DATE__ 就取这两个值）
-git rev-parse v1.1.2   # 发布后的 tag 指向的 40 位 commit
+git rev-parse v1.2.0   # 发布后的 tag 指向的 40 位 commit
 date -u +%F            # 当天日期，如 2026-11-25
 ```
 
-> `__REF__` 用发布后的 `git rev-parse v1.1.2` 的输出；如果打成 annotated tag（`git tag -a`），改用 `git rev-parse v1.1.2^{commit}` 取 commit。`__DATE__` 用发布当天的日期（UTC，`YYYY-MM-DD`）。
+> `__REF__` 用发布后的 `git rev-parse v1.2.0` 的输出；如果打成 annotated tag（`git tag -a`），改用 `git rev-parse v1.2.0^{commit}` 取 commit。`__DATE__` 用发布当天的日期（UTC，`YYYY-MM-DD`）。
 
 ### 1.3 完整投稿 JSON（v2）
 
-下面这段在替换两个占位符后，已通过 OMDSH 官方校验器（见 §1.6）。`__REF__` 换成发布 `1.1.2` 后 `git rev-parse v1.1.2` 得到的固定 commit，`__DATE__` 换成当天日期（如 `2026-11-25`）；`version` / `profileBundle.spec` 已写 `1.1.2`。
+下面这段在替换两个占位符后，已通过 OMDSH 官方校验器（见 §1.6）。`__REF__` 换成发布 `1.2.0` 后 `git rev-parse v1.2.0` 得到的固定 commit，`__DATE__` 换成当天日期（如 `2026-11-25`）；`version` / `profileBundle.spec` 已写 `1.2.0`。
 
 ```json
 {
@@ -226,12 +230,12 @@ date -u +%F            # 当天日期，如 2026-11-25
     }
   },
   "release": {
-    "version": "1.1.2",
+    "version": "1.2.0",
     "ref": "__REF__",
     "updatedAt": "__DATE__",
     "channel": "stable",
     "compatibility": "DeepSeek Harness 0.2.1-rc.5（作者本机验证，Node.js >= 20）；未在 Workshop 当前基线 @deepseek-ai/dsh@0.1.0-rc.6 上验证。",
-    "changelog": "https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.2",
+    "changelog": "https://github.com/qiqll/dsh-task-suite/releases/tag/v1.2.0",
     "capabilities": {
       "requiresFabric": false,
       "deepHook": false,
@@ -239,7 +243,7 @@ date -u +%F            # 当天日期，如 2026-11-25
     },
     "profileBundle": {
       "packageName": "dsh-task-suite",
-      "spec": "1.1.2"
+      "spec": "1.2.0"
     },
     "updateFrom": null
   },
@@ -247,7 +251,7 @@ date -u +%F            # 当天日期，如 2026-11-25
     "method": "profile-bundle",
     "protocol": "harness-profile",
     "label": "npm profile bundle",
-    "instructions": "dsh plugin --profile desktop add dsh-task-suite@1.1.2（Web profile 改为 --profile web；首次安装后需完整重启 DSH）",
+    "instructions": "dsh plugin --profile desktop add dsh-task-suite@1.2.0（Web profile 改为 --profile web；首次安装后需完整重启 DSH）",
     "source": null
   },
   "declarations": {
@@ -303,7 +307,7 @@ date -u +%F            # 当天日期，如 2026-11-25
 
 ```sh
 # 先把 §1.3 的 JSON 保存为 /tmp/omdsh-submission.json
-REF=$(git rev-parse v1.1.2)    # 发布后 v1.1.2 tag 指向的固定 commit；annotated tag 用 v1.1.2^{commit}
+REF=$(git rev-parse v1.2.0)    # 发布后 v1.2.0 tag 指向的固定 commit；annotated tag 用 v1.2.0^{commit}
 DATE=$(date -u +%F)            # 当天日期（UTC），如 2026-11-25
 test ${#REF} -eq 40 || { echo "REF 不是 40 位 commit：$REF" >&2; exit 1; }
 python3 - "$REF" "$DATE" <<'PY'
@@ -323,18 +327,18 @@ python3 -m json.tool /tmp/omdsh-submission.json > /dev/null && echo "JSON OK"
 **标题**：
 
 ```text
-[Submission] dsh-task-suite@1.1.2
+[Submission] dsh-task-suite@1.2.0
 ```
 
 **用 Issue 表单提交时（推荐）**：
 
-1. 标题填 `[Submission] dsh-task-suite@1.1.2`。
+1. 标题填 `[Submission] dsh-task-suite@1.2.0`。
 2. `Author Studio manifest` 字段：粘贴 §1.3 的 JSON 本身（纯 JSON，不要带 JSON 代码围栏）。
 3. `Additional context` 字段：粘贴下面完整正文里的 `### Additional context` 整段。
 4. 勾选表单自带的 4 个必选确认框（无敏感信息 / 安装说明与固定 commit 一致 / 不代表安全背书 / 理解三种接入类型与待审核状态）。
 5. 不要重复粘贴 `### Author Studio manifest` 等标题——表单会自动生成这些区块。
 
-**用 `gh issue create` 或 GitHub API 创建时**，用下面的完整正文（JSON 与 §1.3 相同；`__REF__` 换成 `git rev-parse v1.1.2` 的输出，`__DATE__` 换成当天日期）：
+**用 `gh issue create` 或 GitHub API 创建时**，用下面的完整正文（JSON 与 §1.3 相同；`__REF__` 换成 `git rev-parse v1.2.0` 的输出，`__DATE__` 换成当天日期）：
 
 ````markdown
 ### Author Studio manifest
@@ -373,12 +377,12 @@ python3 -m json.tool /tmp/omdsh-submission.json > /dev/null && echo "JSON OK"
     }
   },
   "release": {
-    "version": "1.1.2",
+    "version": "1.2.0",
     "ref": "__REF__",
     "updatedAt": "__DATE__",
     "channel": "stable",
     "compatibility": "DeepSeek Harness 0.2.1-rc.5（作者本机验证，Node.js >= 20）；未在 Workshop 当前基线 @deepseek-ai/dsh@0.1.0-rc.6 上验证。",
-    "changelog": "https://github.com/qiqll/dsh-task-suite/releases/tag/v1.1.2",
+    "changelog": "https://github.com/qiqll/dsh-task-suite/releases/tag/v1.2.0",
     "capabilities": {
       "requiresFabric": false,
       "deepHook": false,
@@ -386,7 +390,7 @@ python3 -m json.tool /tmp/omdsh-submission.json > /dev/null && echo "JSON OK"
     },
     "profileBundle": {
       "packageName": "dsh-task-suite",
-      "spec": "1.1.2"
+      "spec": "1.2.0"
     },
     "updateFrom": null
   },
@@ -394,7 +398,7 @@ python3 -m json.tool /tmp/omdsh-submission.json > /dev/null && echo "JSON OK"
     "method": "profile-bundle",
     "protocol": "harness-profile",
     "label": "npm profile bundle",
-    "instructions": "dsh plugin --profile desktop add dsh-task-suite@1.1.2（Web profile 改为 --profile web；首次安装后需完整重启 DSH）",
+    "instructions": "dsh plugin --profile desktop add dsh-task-suite@1.2.0（Web profile 改为 --profile web；首次安装后需完整重启 DSH）",
     "source": null
   },
   "declarations": {
@@ -454,8 +458,8 @@ python3 -m json.tool /tmp/omdsh-submission.json > /dev/null && echo "JSON OK"
 
 ### Additional context
 
-- npm exact version: `dsh-task-suite@1.1.2` (MIT). Tarball includes `LICENSE` and `cordis.patch.yml`.
-- Install: `dsh plugin --profile desktop add dsh-task-suite@1.1.2` (or `--profile web`). A full DSH restart is required after first install because the Web client plugin table is composed at process start.
+- npm exact version: `dsh-task-suite@1.2.0` (MIT). Tarball includes `LICENSE` and `cordis.patch.yml`.
+- Install: `dsh plugin --profile desktop add dsh-task-suite@1.2.0` (or `--profile web`). A full DSH restart is required after first install because the Web client plugin table is composed at process start.
 - The plugin has **no install scripts**; `installScriptsMustRemainDisabled` is `true`.
 - The author's runtime is `DeepSeek Harness 0.2.1-rc.5` (Node.js >= 20); the screenshots come from a real session. The current Workshop baseline is `@deepseek-ai/dsh@0.1.0-rc.6`; if RC.6 lifecycle verification is mandatory, this submission will need maintainer guidance rather than a fabricated pass.
 - Evidence files for install / failure isolation / hot reload / remove are intentionally `null`: no RC.6 evidence has been produced yet. The submission is a pending-review request, not a claim of verification.
@@ -485,11 +489,11 @@ cd dsh-hub-workshop-main
 # 只读校验：不 clone、不执行投稿仓库代码
 node scripts/intake.mjs validate /tmp/omdsh-submission.json
 
-# 预览会生成的 intake 记录（id 应为 dsh-task-suite@1.1.2）
+# 预览会生成的 intake 记录（id 应为 dsh-task-suite@1.2.0）
 node scripts/intake.mjs prepare /tmp/omdsh-submission.json | head -20
 ```
 
-本机实跑结果（2026-11-25）：
+本机实跑结果（2026-11-26）：
 
 ```text
 submission accepted for pending review; no repository code was executed
@@ -500,14 +504,14 @@ submission accepted for pending review; no repository code was executed
 ### 1.7 提交后如何验证收录
 
 1. **Issue 自动化**：Issue 下会出现 bot 的 preflight 结果 / 审核 PR 链接；PR 中应出现：
-   - `intake/records/dsh-task-suite@1.1.2.json`
-   - `intake/plans/dsh-task-suite@1.1.2.json`（v2 会生成 typed plan）
+   - `intake/records/dsh-task-suite@1.2.0.json`
+   - `intake/plans/dsh-task-suite@1.2.0.json`（v2 会生成 typed plan）
 2. **公开队列**：
    ```sh
    curl -s https://raw.githubusercontent.com/omdsh-dev/dsh-hub-workshop/main/intake-queue.json \
      | python3 -c 'import sys,json; d=json.load(sys.stdin); print([r["id"] for r in d["records"] if "dsh-task-suite" in r["id"]])'
    ```
-   预期出现 `['dsh-task-suite@1.1.2']`。
+   预期出现 `['dsh-task-suite@1.2.0']`。
 3. **Hub 展示**：
    ```sh
    curl -s https://hub.omdsh.dev/marketplace.json \
@@ -540,7 +544,7 @@ submission accepted for pending review; no repository code was executed
 ```json
 {
   "name": "dsh-task-suite",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "title": {
     "zh": "任务流水线",
     "en": "Task Pipeline"
@@ -551,8 +555,9 @@ submission accepted for pending review; no repository code was executed
   },
   "category": "productivity",
   "screenshots": [
-    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.1.1/docs/screenshots/dashboard-running.png",
-    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.1.1/docs/screenshots/dashboard-overview.png"
+    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/docs/screenshots/dashboard-running.png",
+    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/docs/screenshots/dashboard-overview.png",
+    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/docs/screenshots/dashboard-verify.png"
   ],
   "homepage": "https://qiqll.github.io/dsh-task-suite/"
 }
@@ -560,7 +565,7 @@ submission accepted for pending review; no repository code was executed
 
 说明：
 
-- `version` 必须是 npm 上真实存在的精确版本 `1.1.1`；不要写 `^1.1.1` 或 `latest`。
+- `version` 必须是 npm 上真实存在的精确版本 `1.2.0`；不要写 `^1.2.0` 或 `latest`。
 - `category` 只能取 `tools` / `media` / `productivity` / `communication` / `other`；任务管理/自动化归 `productivity`。
 - 截图是 HTTPS，最多 4 张；这里用 tag 固定的 raw 链接，避免 `main` 变动导致图失效。两张图已确认可访问（200，image/png）。
 - `homepage` 用 GitHub Pages 介绍页，已确认 200。
@@ -571,7 +576,7 @@ submission accepted for pending review; no repository code was executed
 **标题**：
 
 ```text
-Add dsh-task-suite 1.1.1
+Add dsh-task-suite 1.2.0
 ```
 
 **描述**：
@@ -580,7 +585,7 @@ Add dsh-task-suite 1.1.1
 ## 插件
 
 - 包名：`dsh-task-suite`
-- 版本：`1.1.1`（npm 精确版本）
+- 版本：`1.2.0`（npm 精确版本）
 - 许可证：MIT
 - 仓库：https://github.com/qiqll/dsh-task-suite
 - 主页：https://qiqll.github.io/dsh-task-suite/
@@ -599,7 +604,7 @@ Add dsh-task-suite 1.1.1
 ## 检查清单
 
 - [x] 只增加一个 `plugins/dsh-task-suite.json`
-- [x] 使用 npm 上已发布的精确版本 `1.1.1`
+- [x] 使用 npm 上已发布的精确版本 `1.2.0`
 - [x] 插件有 OSI 开源许可证（MIT）
 - [x] 未填写 `tier` 或审核结果
 - [x] 没有原生适配声明（不使用 `dshGo` 协议；本条目是 DSH bundle）
@@ -616,7 +621,7 @@ warnings: shell, network, filesystem, not-adapted
 risk.level: medium
 ```
 
-`not-adapted` 表示没有声明 DSH Go 原生 `dshGo` 协议，不是结构错误；`shell` / `network` / `filesystem` 是启发式风险标记，会展示在 App 数据里。扫描的是 npm 当时返回的 1.1.1 tarball，integrity 为 `sha512-gLiQHqOf+nev9C0i8ebgDBKk5+Ccjt1/dfDSY4WSYqCqKOWdZoAFfy4uZurghL6qy+w56ASH+TYADgDigNHZAg==`。
+`not-adapted` 表示没有声明 DSH Go 原生 `dshGo` 协议，不是结构错误；`shell` / `network` / `filesystem` 是启发式风险标记，会展示在 App 数据里。扫描的是 npm 当时返回的 1.2.0 tarball，integrity 为 `sha512-gLiQHqOf+nev9C0i8ebgDBKk5+Ccjt1/dfDSY4WSYqCqKOWdZoAFfy4uZurghL6qy+w56ASH+TYADgDigNHZAg==`。
 
 ## 截图
 
@@ -656,7 +661,7 @@ node scripts/check.mjs /tmp/dsh-go-candidate
 npm test
 ```
 
-预期（本机实跑，2026-11-25）：
+预期（本机实跑，2026-11-26）：
 
 ```json
 {
@@ -664,7 +669,7 @@ npm test
   "results": [
     {
       "name": "dsh-task-suite",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "status": "passed",
       "denials": [],
       "warnings": ["shell", "network", "filesystem", "not-adapted"],
@@ -690,7 +695,7 @@ curl -s https://ccch1mneyyy.github.io/dsh-go-market/index.json \
 curl -s -o /dev/null -w '%{http_code}\n' https://go.dshtui.com/p/dsh-task-suite
 ```
 
-然后在 DSH Go 的插件市场刷新（或重启 App），搜索 `dsh-task-suite`，确认版本显示 `1.1.1`。Worker 端点是 `https://go.dshtui.com/market/`，Pages 端点是 `https://ccch1mneyyy.github.io/dsh-go-market/`。
+然后在 DSH Go 的插件市场刷新（或重启 App），搜索 `dsh-task-suite`，确认版本显示 `1.2.0`。Worker 端点是 `https://go.dshtui.com/market/`，Pages 端点是 `https://ccch1mneyyy.github.io/dsh-go-market/`。
 
 ### 2.6 风险提示
 
@@ -715,7 +720,7 @@ curl -s -o /dev/null -w '%{http_code}\n' https://go.dshtui.com/p/dsh-task-suite
 **标题**：
 
 ```text
-[catalog] qiqll/dsh-task-suite missing from catalog/v2 (npm 1.1.1, dsh-plugin topic set)
+[catalog] qiqll/dsh-task-suite missing from catalog/v2 (npm 1.2.0, dsh-plugin topic set)
 ```
 
 **正文**：
@@ -723,15 +728,15 @@ curl -s -o /dev/null -w '%{http_code}\n' https://go.dshtui.com/p/dsh-task-suite
 ````markdown
 ## Summary
 
-`qiqll/dsh-task-suite` is a public MIT DeepSeek Harness bundle published to npm as `dsh-task-suite@1.1.1`. The repository has the `dsh-plugin` topic and its `package.json` declares `dsh.bundle.patch`, but `catalog/v2/catalog.json` contains no entry for the package or the repository.
+`qiqll/dsh-task-suite` is a public MIT DeepSeek Harness bundle published to npm as `dsh-task-suite@1.2.0`. The repository has the `dsh-plugin` topic and its `package.json` declares `dsh.bundle.patch`, but `catalog/v2/catalog.json` contains no entry for the package or the repository.
 
 ## Verifiable facts
 
 - Repository: https://github.com/qiqll/dsh-task-suite (public, default branch `main`, license MIT)
 - GitHub topic: `["dsh-plugin"]`
-- npm: `dsh-task-suite@1.1.1`, published `2026-11-23T11:46:53.551Z`, license MIT
+- npm: `dsh-task-suite@1.2.0`, published `2026-11-26T12:40:50.066Z`, license MIT
 - npm `repository.url`: `git+https://github.com/qiqll/dsh-task-suite.git` (matches the repository owner/name)
-- `package.json` at tag `v1.1.1` (commit `c0c8e427f5ad79e6998842778e21e0148c69a047`):
+- `package.json` at tag `v1.2.0` (commit `433fcba07cefcd3aae71a6b1ab9d178295412b2e`):
   - `dsh.bundle.patch = "./cordis.patch.yml"`
   - `cordis.patch.yml` is present in the npm tarball
 - npm tarball: 23 files, 242,071 bytes unpacked, integrity `sha512-gLiQHqOf+nev9C0i8ebgDBKk5+Ccjt1/dfDSY4WSYqCqKOWdZoAFfy4uZurghL6qy+w56ASH+TYADgDigNHZAg==`
@@ -758,7 +763,7 @@ The checkpoint (`catalog/v2/scan-state.json`) advances on every scheduled run, b
 ```sh
 npm view dsh-task-suite version license repository.url
 
-curl -s https://registry.npmjs.org/dsh-task-suite/1.1.1 | python3 -c '
+curl -s https://registry.npmjs.org/dsh-task-suite/1.2.0 | python3 -c '
 import sys, json
 d = json.load(sys.stdin)
 print(d["version"], d["license"], d["repository"]["url"])
@@ -771,7 +776,7 @@ d = json.load(sys.stdin)
 print(d["private"], d["license"]["spdx_id"], d["topics"])
 '
 
-curl -s https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.1.1/package.json | python3 -c '
+curl -s https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/package.json | python3 -c '
 import sys, json
 d = json.load(sys.stdin)
 print(d["version"], d["dsh"]["bundle"])
@@ -787,7 +792,7 @@ print([e["id"] for e in d["entries"] if "dsh-task-suite" in e["id"]])
 
 ## Post-merge verification
 
-- The catalog should contain an entry with `repositoryFullName = "qiqll/dsh-task-suite"` and `version = "1.1.1"`.
+- The catalog should contain an entry with `repositoryFullName = "qiqll/dsh-task-suite"` and `version = "1.2.0"`.
 - In DSH, install/refresh `@ruihuahe/dsh-plugin-marketplace@0.1.0` and search for `dsh-task-suite`; the marketplace should show it as installable with an exact npm version.
 
 Thanks!
@@ -804,7 +809,7 @@ curl -s https://api.github.com/repos/qiqll/dsh-task-suite \
   | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["private"], d["topics"], d["license"]["spdx_id"])'
 
 # dsh.bundle 声明
-curl -s https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.1.1/package.json \
+curl -s https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/package.json \
   | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["version"], d["dsh"]["bundle"])'
 
 # catalog 是否仍缺失
@@ -812,12 +817,12 @@ curl -s https://raw.githubusercontent.com/hrhgit/deepseek-harness-plugin-manager
   | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["generatedAt"], len(d["entries"])); print([e["id"] for e in d["entries"] if "dsh-task-suite" in e["id"]])'
 ```
 
-预期（2026-11-25 实跑）：
+预期（2026-11-26 实跑）：
 
 ```text
-1.1.1 MIT git+https://github.com/qiqll/dsh-task-suite.git
+1.2.0 MIT git+https://github.com/qiqll/dsh-task-suite.git
 False ['dsh-plugin'] MIT
-1.1.1 {'patch': './cordis.patch.yml'}
+1.2.0 {'patch': './cordis.patch.yml'}
 2026-08-14T12:56:57.210Z 1001
 []
 ```
@@ -863,7 +868,7 @@ dsh plugin --profile desktop add @ruihuahe/dsh-plugin-marketplace@0.1.0
 **标题**：
 
 ```text
-Add qiqll/dsh-task-suite (npm 1.1.1) and fix stale sitemap URLs returning 404
+Add qiqll/dsh-task-suite (npm 1.2.0) and fix stale sitemap URLs returning 404
 ```
 
 **正文**：
@@ -871,9 +876,9 @@ Add qiqll/dsh-task-suite (npm 1.1.1) and fix stale sitemap URLs returning 404
 ````markdown
 ## Summary
 
-`qiqll/dsh-task-suite` is a public MIT DSH bundle (`dsh-task-suite@1.1.1` on npm). It is **not** in the snapshot `catalog.json`, while the live sitemap already advertises two detail URLs that currently return **404**. Please add the plugin and regenerate the sitemap from the actual catalog.
+`qiqll/dsh-task-suite` is a public MIT DSH bundle (`dsh-task-suite@1.2.0` on npm). It is **not** in the snapshot `catalog.json`, while the live sitemap already advertises two detail URLs that currently return **404**. Please add the plugin and regenerate the sitemap from the actual catalog.
 
-## What I checked (2026-11-25)
+## What I checked (2026-11-26)
 
 ### Live sitemap
 
@@ -898,7 +903,7 @@ The live site header says 14,498 extensions, so the snapshot is also well behind
 ### Source facts
 
 - Repository: https://github.com/qiqll/dsh-task-suite (public, MIT)
-- npm: `dsh-task-suite@1.1.1`, published `2026-11-23T11:46:53.551Z`
+- npm: `dsh-task-suite@1.2.0`, published `2026-11-26T12:40:50.066Z`
 - GitHub topic: `dsh-plugin`
 - `package.json` declares `dsh.bundle.patch = "./cordis.patch.yml"`; the file is in the npm tarball
 - Install: `dsh plugin --profile web add dsh-task-suite` (desktop users can use `--profile desktop`)
@@ -943,12 +948,12 @@ The English detail URL for that same known entry returned 404 during this check,
   "npm": "dsh-task-suite",
   "stars": 0,
   "install": "dsh plugin --profile web add dsh-task-suite",
-  "added": "2026-11-25",
+  "added": "2026-11-26",
   "sources": ["github-topic", "awesome-dsh-plugin"],
   "verification": null,
   "installable": true,
   "license": "MIT",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "featured": false,
   "tags": ["dsh-plugin", "task-management", "orchestration", "subagent", "workflow", "automation", "dashboard"]
 }
@@ -974,10 +979,10 @@ Thank you!
 | `npm` | `dsh-task-suite` | npm 包名 |
 | `install` | `dsh plugin --profile web add dsh-task-suite` | 与站点现有条目风格一致；桌面版可换 `--profile desktop` |
 | `license` | `MIT` | npm + GitHub + LICENSE 文件 |
-| `version` | `1.1.1` | npm latest |
+| `version` | `1.2.0` | npm latest |
 | `sources` | `github-topic`, `awesome-dsh-plugin` | 两个来源都已实际收录/可发现 |
 | `installable` | `true` | 精确 npm 版本 + `dsh.bundle` 存在 |
-| `added` | `2026-11-25` | 本次补录日期，维护者可改 |
+| `added` | `2026-11-26` | 本次补录日期，维护者可改 |
 | `verification` | `null` | DSH Get 不做安全认证；不要伪造 |
 
 ### 4.4 提交前本地校验
@@ -996,13 +1001,13 @@ curl -s https://raw.githubusercontent.com/bobby-sheng/dshget-data/main/catalog.j
 npm view dsh-task-suite version license repository.url
 ```
 
-本机实跑（2026-11-25）：
+本机实跑（2026-11-26）：
 
 ```text
 404
 404
 2460 2026-08-16 0
-1.1.1 MIT git+https://github.com/qiqll/dsh-task-suite.git
+1.2.0 MIT git+https://github.com/qiqll/dsh-task-suite.git
 ```
 
 ### 4.5 提交后如何验证收录
@@ -1033,12 +1038,12 @@ DSH Get 的线上站点更新频率高于快照仓库，所以“线上先出现
 
 | 顺序 | 材料 | 动作 | 前置条件 | 提交耗时 | 生效/审核 | 主要风险 |
 |---|---|---|---|---|---|---|
-| 1 | DSH Go 市场 PR | Fork → 加 `plugins/dsh-task-suite.json` → 向 `main` 提 PR | 无（npm 1.1.1 已发布） | 10–15 分钟 | 自动检查通过后 auto-merge，通常 10–30 分钟 | 风险扫描标记 shell/network/filesystem（medium），不影响上架；版本/许可已核对 |
+| 1 | DSH Go 市场 PR | Fork → 加 `plugins/dsh-task-suite.json` → 向 `main` 提 PR | 无（npm 1.2.0 已发布） | 10–15 分钟 | 自动检查通过后 auto-merge，通常 10–30 分钟 | 风险扫描标记 shell/network/filesystem（medium），不影响上架；版本/许可已核对 |
 | 2 | hrhgit 目录 Issue | 开 Issue 请求 full reconcile | 无 | 5–10 分钟 | 维护者处理 + 下次扫描，1–3 天 | 1000 条上限可能仍需维护者改扫描窗口 |
 | 3 | DSH Get Issue | 开 Issue 补录 + 修 sitemap | 无 | 5–10 分钟 | 维护者处理/站点重新生成，1–5 天 | 快照更新慢；英文详情页 404 可能是站点级问题 |
-| 4 | OMDSH Hub 投稿 | 加 `dshWorkshop` → 发 1.1.2 → 填 Issue 表单 | **必须先改 `package.json` 并发布 1.1.2** | 30–60 分钟（含发版）+ 10 分钟 | `pending-review` 后人工审核，数天到数周 | 当前基线 `0.1.0-rc.6` 与作者验证的 `0.2.1-rc.5` 不一致，可能 `needs-fix`；无 RC.6 evidence |
+| 4 | OMDSH Hub 投稿 | 加 `dshWorkshop` → 发 1.2.0 → 填 Issue 表单 | **必须先改 `package.json` 并发布 1.2.0** | 30–60 分钟（含发版）+ 10 分钟 | `pending-review` 后人工审核，数天到数周 | 当前基线 `0.1.0-rc.6` 与作者验证的 `0.2.1-rc.5` 不一致，可能 `needs-fix`；无 RC.6 evidence |
 
-**建议**：先做 1（全自动、最快），同时开 2 和 3（互不依赖），最后做 4（需要一次真实发版）。4 的 manifest 可以先在本地写好、跑通官方 `validate`，再决定何时发 1.1.2。
+**建议**：先做 1（全自动、最快），同时开 2 和 3（互不依赖），最后做 4（需要一次真实发版）。4 的 manifest 可以先在本地写好、跑通官方 `validate`，再决定何时发 1.2.0。
 
 ### 5.1 提交记录（提交后回填）
 
@@ -1051,9 +1056,9 @@ DSH Get 的线上站点更新频率高于快照仓库，所以“线上先出现
 
 ### 5.2 提交前的最后自检
 
-- [ ] `npm view dsh-task-suite version` 返回 `1.1.1`（OMDSH 走 1.1.2 时返回 `1.1.2`）
+- [ ] `npm view dsh-task-suite version` 返回 `1.2.0`
 - [ ] GitHub 仓库仍是 public，topic 仍包含 `dsh-plugin`，license 仍为 MIT
-- [ ] `v1.1.1` tag 指向 `c0c8e42…`；若已发 1.1.2，换成新 tag/commit
+- [ ] `v1.2.0` tag 指向 `433fcba…`（与 npm 1.2.0 同一 commit）
 - [ ] DSH Go 条目文件名是 `dsh-task-suite.json`，`version` 是精确版本
 - [ ] OMDSH 的 `packageManifest` 与 `package.json#dshWorkshop` 逐字一致
 - [ ] 四个 Issue/PR 正文里没有 token、私有路径、客户名或本机绝对路径

@@ -1,0 +1,105 @@
+{
+  "schema": "omdsh-workshop-submission/v2",
+  "operation": "create-project",
+  "project": {
+    "id": "dsh-task-suite",
+    "displayName": "DSH 任务流水线 / DSH Task Suite",
+    "summary": "把单个 DSH Agent 变成一支工程团队：Markdown 任务池、主 Agent 调度、后台 worker 交付、机器验收（重跑测试、基线比对、测试改弱审计）、异步需求投递与只读 Web 面板。",
+    "kind": "extension",
+    "category": "workflow",
+    "tags": [
+      "task-management",
+      "orchestration",
+      "subagent",
+      "workflow",
+      "automation",
+      "dashboard"
+    ],
+    "repository": "https://github.com/qiqll/dsh-task-suite",
+    "path": null,
+    "author": {
+      "name": "qiqll",
+      "url": "https://github.com/qiqll"
+    },
+    "license": "MIT",
+    "media": {
+      "icon": "assets/icon-512.png",
+      "screenshots": [
+        "docs/screenshots/dashboard-verify.png",
+        "docs/screenshots/dashboard-running.png",
+        "docs/screenshots/dashboard-overview.png"
+      ]
+    }
+  },
+  "release": {
+    "version": "1.2.0",
+    "ref": "433fcba07cefcd3aae71a6b1ab9d178295412b2e",
+    "updatedAt": "2026-11-26",
+    "channel": "stable",
+    "compatibility": "DeepSeek Harness 0.2.1-rc.5（作者本机验证，Node.js >= 20）；未在 Workshop 当前基线 @deepseek-ai/dsh@0.1.0-rc.6 上验证。",
+    "changelog": "https://github.com/qiqll/dsh-task-suite/releases/tag/v1.2.0",
+    "capabilities": {
+      "requiresFabric": false,
+      "deepHook": false,
+      "restartRequired": true
+    },
+    "profileBundle": {
+      "packageName": "dsh-task-suite",
+      "spec": "1.2.0"
+    },
+    "updateFrom": null
+  },
+  "management": {
+    "method": "profile-bundle",
+    "protocol": "harness-profile",
+    "label": "npm profile bundle",
+    "instructions": "dsh plugin --profile desktop add dsh-task-suite@1.2.0（Web profile 改为 --profile web；首次安装后需完整重启 DSH）",
+    "source": null
+  },
+  "declarations": {
+    "permissions": "filesystem:workspace（读写工作区 .dsh/tasks、快照与 inbox）；process:spawn（在任务工作区运行 git 与用户声明的单条 TEST_CMD）；无出站网络请求；客户端面板只读，通过宿主注册的 GET /dsh-task-suite/state 读取状态。",
+    "testing": "作者在 macOS 桌面版 DSH（本机 0.2.1-rc.5）上运行并截取真实面板；node selftest.mjs（离线自测）通过。尚未提供 RC.6 生命周期证据（安装/升级/禁用/移除/失败隔离），因此按未验证处理。",
+    "trustedPublisherRequested": false,
+    "installScriptsMustRemainDisabled": true
+  },
+  "packageManifest": {
+    "schema": "omdsh-workshop-package/v1",
+    "type": "plugin",
+    "integration": {
+      "protocol": "harness-profile",
+      "artifact": "cordis.patch.yml"
+    },
+    "install": {
+      "mode": "transactional",
+      "adapter": "profile-bundle",
+      "failurePolicy": "generation-rollback",
+      "touchesCurrentBeforeActivation": false
+    },
+    "lifecycle": {
+      "activation": "restart-profile",
+      "dispose": "unknown"
+    },
+    "permissions": [
+      "filesystem:workspace",
+      "process:spawn",
+      "git:read-write"
+    ],
+    "compatibility": {
+      "dshVersions": [
+        "0.2.1-rc.5"
+      ]
+    },
+    "capability": {
+      "id": "task_status",
+      "kind": "tool",
+      "invocation": "在任意会话调用 task_status 工具（空任务池）",
+      "expected": "返回任务池全局视图：0 条任务、无待决策/阻塞，并给出下一步建议"
+    },
+    "evidence": {
+      "install": null,
+      "failureIsolation": null,
+      "hotReload": null,
+      "remove": null
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # 发布工具包（Launch kit）
 
-本目录只有一件事：把 `dsh-task-suite` 1.1.1 的对外文案定稿，让**用户用自己的账号**在正确的地方发一次。
+本目录只有一件事：把 `dsh-task-suite` 1.2.0 的对外文案定稿与投稿操作单，让**用户用自己的账号**在正确的地方发一次。
 
 - **不代发**：所有帖子、issue 都由用户账号发布，Agent 不登录、不点发布按钮。
 - **不 @ 人**：不 @ 维护者、不 `@everyone` / `@here`、不在别人帖下贴链接。
@@ -9,12 +9,12 @@
 
 ---
 
-## 事实口径（统一，版本 1.1.1）
+## 事实口径（统一，版本 1.2.0）
 
 | 项 | 值 |
 |---|---|
 | 名称 | `dsh-task-suite`（中文名：DSH 任务流水线） |
-| 版本 / 许可 | `1.1.1` / MIT |
+| 版本 / 许可 | `1.2.0` / MIT |
 | npm | https://www.npmjs.com/package/dsh-task-suite |
 | 仓库 | https://github.com/qiqll/dsh-task-suite |
 | 介绍页 | https://qiqll.github.io/dsh-task-suite/ |
@@ -43,6 +43,7 @@
 | 同上 §2 | 即刻短帖 | 中文 | 232 字 | 待发 |
 | [newsletters.md](newsletters.md) | 阮一峰《科技爱好者周刊》 | 中文 | 96 字（介绍段） | 待投 |
 | 同上 §2 | HelloGitHub 月刊 | 中文 | 81 字（描述段） | 待投 |
+| [submit-markets.md](submit-markets.md) | 四个市场/目录的投稿操作单 | 中文 | — | 待投 |
 
 长度口径：英文按单词数；中文按**汉字数**统计，链接、安装命令、英文标识符不计入。发帖平台的字数限制都不在这个量级，不需要为了凑数扩写。文案与清单里的图片路径都相对**仓库根目录**（例如 `docs/screenshots/dashboard-running.png`）。
 
@@ -54,9 +55,9 @@
 
 ### P0 — 素材与链路（发任何帖子之前）
 
-- [ ] `dsh plugin --profile desktop add dsh-task-suite` 在**干净 profile** 里装一次，确认 1.1.1 可安装、`task_init` 可用、三个 skill 注册。
+- [ ] `dsh plugin --profile desktop add dsh-task-suite` 在**干净 profile** 里装一次，确认 1.2.0 可安装、`task_init` 可用、三个 skill 注册。
 - [ ] 装完**完整退出并重开 DSH**，确认右下角「任务流水线」入口出现；没装 `dsh-better-sidebar` 时任务工具仍可用，只是没有面板。
-- [ ] 面板截图就位：`docs/screenshots/dashboard-overview.png`、`dashboard-running.png`、`pipeline-overview.png`；GIF 没有也能发，但不要放破图占位。
+- [ ] 面板截图就位：`docs/screenshots/dashboard-overview.png`、`dashboard-running.png`、`dashboard-verify.png`、`pipeline-overview.png`；GIF 没有也能发，但不要放破图占位。
 - [ ] 截图里没有 API Key、token、`/Users/<name>` 等本地路径。
 - [ ] 介绍页 https://qiqll.github.io/dsh-task-suite/ 能打开；仓库 README 的安装命令与文案一致。
 - [ ] 两个链接各点一次，确认 UTM 参数没把页面打挂（GitHub Pages 会保留 query）。
@@ -106,7 +107,7 @@
 - [ ] 节点「分享创造」，标题以 `[开源]` 开头。
 - [ ] 正文是纯文本可读：命令单独一行，链接不要藏在 Markdown 语法里。
 - [ ] 两张图 + GIF 已上图床，正文贴直链；GIF 控制在 8 MB 内。
-- [ ] 正文里 0 star 与「刚发 1.1.1」保留。
+- [ ] 正文里 0 star 与「刚发 1.2.0」保留。
 - [ ] 结尾只问一个问题；不写「求 star / 求支持」。
 - [ ] 发完不自己顶帖；有人问才回。
 
@@ -142,10 +143,10 @@
 统一格式：
 
 ```text
-https://qiqll.github.io/dsh-task-suite/?utm_source=<channel>&utm_medium=<medium>&utm_campaign=launch-1.1.1
+https://qiqll.github.io/dsh-task-suite/?utm_source=<channel>&utm_medium=<medium>&utm_campaign=launch-1.2.0
 ```
 
-帖子正文里为了可读性只写了 `utm_source` + `utm_medium`；正式发布时补上 `utm_campaign=launch-1.1.1` 即可（三段都在，统计才分得开版本）。
+帖子正文里为了可读性只写了 `utm_source` + `utm_medium`；正式发布时补上 `utm_campaign=launch-1.2.0` 即可（三段都在，统计才分得开版本）。
 
 | 渠道 | `utm_source` | `utm_medium` |
 |---|---|---|
@@ -162,7 +163,7 @@ https://qiqll.github.io/dsh-task-suite/?utm_source=<channel>&utm_medium=<medium>
 - 只给**介绍页**加 UTM；GitHub 仓库链接保持干净，不要加参数（GitHub 自己会记 referrer，加了反而显得脏）。
 - 安装命令永远不带参数。
 - 全部小写、用连字符，不要中文、空格、大写。
-- 同一渠道发第二轮时，把 `utm_campaign` 改成 `launch-1.1.1-r2`，不要覆盖第一轮数据。
+- 同一渠道发第二轮时，把 `utm_campaign` 改成 `launch-1.2.0-r2`，不要覆盖第一轮数据。
 - 周报 / 月刊如果编辑改写了链接，以编辑的版本为准，在自己的发布记录里注明「链接被改写」。
 
 ---
@@ -172,7 +173,7 @@ https://qiqll.github.io/dsh-task-suite/?utm_source=<channel>&utm_medium=<medium>
 - 口径基线：本仓库 [`README.md`](../../README.md)（版本、安装、四道关、两种基线模式）+ 已归档的 `docs/screenshots/README.md`。
 - 结构与语气参考：`/tmp/claude-task/docs/promo/messaging.md`（四个卖点 + 一个护城河、「诚实边界」）与 `/tmp/claude-task/docs/promo/posts.md`（V2EX / 即刻 / 周刊 / HelloGitHub 的段落骨架）。
 - **改写而非搬运**：参考素材是另一个项目（claude-task）的文案，渠道格式和叙事顺序借用，事实、命令、链接、产品行为全部换成 `dsh-task-suite` 的。没有保留 claude-task 的 `/plugin install` 命令、`refs/auto-failed/*` 路径、`.claude/` 目录等细节。
-- 同目录的 `channels.md` / `zh.md` / `en.md` / `checklist.md` / `social.md` / `positioning.md` 是 1.1.0 时的旧稿，本次不改写、也不删除，仅作背景参考；以本文件索引的 1.1.1 版本为准。
+- 同目录的 `channels.md` / `zh.md` / `en.md` / `checklist.md` / `social.md` / `positioning.md` 是 1.1.0 时的旧稿，本次不改写、也不删除，仅作背景参考；以本文件索引的 1.2.0 版本为准。
 - 四道关的表述来自 `README.md` 的「验收与防作弊」一节，并保持 `lib/accept.js` 的实际顺序。
 - 「这个插件自己的开发任务也是这么排的：9 个任务已归档，打回 0 次」来自 `.dsh/tasks/dev-progress.md` 的统计行（2026-11 时点）。**发帖前请重新核对**；数字变了就删掉这句，不要改写成更大的数。
 
@@ -197,6 +198,6 @@ https://qiqll.github.io/dsh-task-suite/?utm_source=<channel>&utm_medium=<medium>
 
 | 日期 | 渠道 | 链接 | UTM campaign | 24h 反馈 | 是否已回 |
 |---|---|---|---|---|---|
-| — | — | — | `launch-1.1.1` | — | — |
+| — | — | — | `launch-1.2.0` | — | — |
 
 复盘只看两件事：介绍页来源（UTM）、issue/帖子里被问得最多的问题。第二个问题写进 1.2.0 的 backlog，不要在现场承诺。

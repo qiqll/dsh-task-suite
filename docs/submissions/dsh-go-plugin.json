@@ -1,0 +1,19 @@
+{
+  "name": "dsh-task-suite",
+  "version": "1.2.0",
+  "title": {
+    "zh": "任务流水线",
+    "en": "Task Pipeline"
+  },
+  "summary": {
+    "zh": "把单个 DSH Agent 变成一支工程团队：Markdown 任务池、主 Agent 调度、后台 worker 交付、机器验收（重跑测试、基线比对、测试改弱审计），需求可异步投递，附只读 Web 面板；git 可选。",
+    "en": "Turn one DSH agent into a small engineering team: a Markdown task pool, a lead agent that dispatches isolated background workers, machine-verified acceptance (test rerun, baseline diff, test-weakening audit), async intake, and a read-only Web dashboard. Git optional."
+  },
+  "category": "productivity",
+  "screenshots": [
+    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/docs/screenshots/dashboard-running.png",
+    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/docs/screenshots/dashboard-overview.png",
+    "https://raw.githubusercontent.com/qiqll/dsh-task-suite/v1.2.0/docs/screenshots/dashboard-verify.png"
+  ],
+  "homepage": "https://qiqll.github.io/dsh-task-suite/"
+}
