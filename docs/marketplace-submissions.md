@@ -1049,10 +1049,10 @@ DSH Get 的线上站点更新频率高于快照仓库，所以“线上先出现
 
 | 材料 | 提交 URL | 提交日期 | 当前状态 | 备注 |
 |---|---|---|---|---|
-| DSH Go PR |  |  |  |  |
-| hrhgit Issue |  |  |  |  |
-| DSH Get Issue |  |  |  |  |
-| OMDSH Issue |  |  |  |  |
+| DSH Go PR | https://github.com/ccch1mneyyy/dsh-go-market/pull/196 | 2026-11-27 | open，等维护者合并 | `catalog` 检查 success、CodeRabbit success、mergeable；`auto-merge` 失败是该仓库已知的 bot 限制，不影响 |
+| hrhgit Issue | https://github.com/hrhgit/deepseek-harness-plugin-manager/issues/2 | 2026-11-27 | open | 等 full reconcile；目录 `generatedAt` 停在 2026-08-14 |
+| DSH Get Issue | https://github.com/bobby-sheng/dshget-data/issues/13 | 2026-11-27 | open | 等补录；快照 `syncedAt` 停在 2026-08-16 |
+| OMDSH Issue | https://github.com/omdsh-dev/dsh-hub-workshop/issues/188 | 2026-11-27 | open，预检未过（**平台 bug**） | `prepare-issue-intake` 通过；`check-public-site.mjs:138` 的 `untested` 断言 885≠884；修复 PR #185 未合并，**不要重复提交** |
 
 ### 5.2 提交前的最后自检
 
