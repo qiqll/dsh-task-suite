@@ -25,7 +25,7 @@ dsh-task-suite：给 DeepSeek Harness 的任务池插件
 链接：https://github.com/qiqll/dsh-task-suite
 介绍页：https://qiqll.github.io/dsh-task-suite/?utm_source=ruanyf-weekly&utm_medium=issue
 
-介绍：一个 DeepSeek Harness 插件。需求写进仓库里的 Markdown 任务池，主 Agent 只派活，后台 subagent 在全新上下文里逐条实现；交付前要过四道机器验收：一次性 nonce、commit 归属、开工基线重跑、测试改弱审计，通过后进「待验证」，人确认才归档。git 可选，普通目录用文件快照；右侧栏有只读面板（作者自荐）。
+介绍：一个 DeepSeek Harness 插件。需求写进仓库里的 Markdown 任务池，主 Agent 只派活，后台 subagent 在全新上下文里逐条实现；交付前要过四道机器验收：一次性 nonce、commit 归属、开工基线重跑、测试改弱审计，通过后进「待验证」，人确认才归档。git 可选，普通目录用文件快照；右侧栏有只读面板，已收录进 DSH Go 市场（作者自荐）。
 ```
 
 ### 提交备注
@@ -57,7 +57,7 @@ dsh-task-suite：给 DeepSeek Harness 的任务池插件
 类别：其它（AI / 效率工具）
 项目标题：给 DeepSeek Harness 加一条任务流水线
 
-项目描述：需求进 .dsh/tasks 的 Markdown 池，主 Agent 只调度，后台 subagent 逐条交付；验收由机器跑四道关，分别管一次性口令、提交归属、基线比对、测试改动审计，全部过了才是「待验证」，人确认才归档。git 可选，普通目录用文件快照；右侧栏有只读面板（需 dsh-better-sidebar）。MIT。
+项目描述：需求进 .dsh/tasks 的 Markdown 池，主 Agent 只调度，后台 subagent 逐条交付；验收由机器跑四道关，分别管一次性口令、提交归属、基线比对、测试改动审计，全部过了才是「待验证」，人确认才归档。git 可选，普通目录用文件快照；右侧栏有只读面板（需 dsh-better-sidebar）；已收录进 DSH Go 市场。MIT。
 
 亮点：任务池是纯文本，可读可改；非 git 目录也能用；面板只读，不写任务池。
 
@@ -80,6 +80,6 @@ dsh-task-suite：给 DeepSeek Harness 的任务池插件
 - [ ] 写了 git 可选（普通目录走文件快照），没有暗示必须有 git。
 - [ ] 面板依赖 `dsh-better-sidebar` 的说法保留（如果当期字数超了，可删面板句，不要删四道关）。
 - [ ] 没有「最强」「第一」「唯一」「革命性」这类词。
-- [ ] 0 star 的冷启动事实：周刊/月刊正文里不写 star 数，但也不编造用户量。
+- [ ] 1 star 的冷启动事实：周刊/月刊正文里不写 star 数，但也不编造用户量。
 - [ ] 介绍页链接带 UTM；GitHub 仓库链接保持干净，不加参数。
 - [ ] 用自己账号提交，issue 里不 @ 编辑，不催审。

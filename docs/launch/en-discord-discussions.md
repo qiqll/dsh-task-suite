@@ -27,12 +27,12 @@ Three things it does differently:
 2. "Done" is mechanical. Each dispatch gets a one-time nonce. Commits must carry the task ID. Failed tests are re-run at the start baseline. Weakened tests are audited. A worker saying "done" is not enough.
 3. git is optional. In a plain folder it uses file snapshots and runs the same checks.
 
-Install: dsh plugin --profile desktop add dsh-task-suite (use --profile web for the web build). The read-only dashboard needs dsh-better-sidebar, plus one full restart.
+Install: dsh plugin --profile desktop add dsh-task-suite (use --profile web for the web build). The read-only dashboard needs dsh-better-sidebar and one restart.
 
 Repo: https://github.com/qiqll/dsh-task-suite
 Landing: https://qiqll.github.io/dsh-task-suite/?utm_source=discord&utm_medium=post
 
-It is new: 0 stars, and I am the only user so far.
+It is new: 1 star, and I'm the main user. It is listed in the DSH Go market too.
 
 Question: if you left a loop running overnight, what should the acceptance gate check that it does not check today?
 ```
@@ -65,12 +65,12 @@ The main session stays a dispatcher: it adds tasks, picks the next one, sends it
 2. Acceptance is machine-run: a one-time nonce, commit ownership, a baseline re-run, and a weakened-test audit. Passing all four is what "done" means. The final state is still "to verify" until a person confirms.
 3. No git needed. Without a repo, it snapshots the folder at claim time and runs the same checks.
 
-Install: dsh plugin --profile desktop add dsh-task-suite (use --profile web for the web build). The dashboard is read-only and needs dsh-better-sidebar. Restart DSH once after install.
+Install: dsh plugin --profile desktop add dsh-task-suite (use --profile web for the web build). The dashboard needs dsh-better-sidebar; restart DSH once after install.
 
 Repo: https://github.com/qiqll/dsh-task-suite
 Landing: https://qiqll.github.io/dsh-task-suite/?utm_source=github-discussions&utm_medium=post
 
-The project has 0 stars, so please read this as a request for early feedback, not a recommendation.
+The project has 1 star, so read this as a request for early feedback, not a recommendation. It is also listed in the DSH Go market.
 
 Question: which part would make you trust an overnight run — the test audit, the decision queue, or rollback?
 ```
@@ -80,7 +80,7 @@ Question: which part would make you trust an overnight run — the test audit, t
 - 钩子句：`working through a backlog while you do something else`。
 - 三条差异：纯文件状态 / 机器验收四道关 / 无 git 也能用。
 - 提问引导：三选一，降低回复成本；有人答就追问一句他现在的做法。
-- 别在帖子里承诺 roadmap；0 star 的冷启动状态要保留，不要删掉这句。
+- 别在帖子里承诺 roadmap；1 star 的冷启动状态要保留，不要删掉这句。
 
 ---
 

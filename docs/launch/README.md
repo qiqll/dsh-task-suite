@@ -5,7 +5,7 @@
 - **不代发**：所有帖子、issue 都由用户账号发布，Agent 不登录、不点发布按钮。
 - **不 @ 人**：不 @ 维护者、不 `@everyone` / `@here`、不在别人帖下贴链接。
 - **不刷屏**：同一渠道同一版本只发一次；同一天最多两个渠道。
-- **0 star 冷启动**：文案里保留「刚发布 / 0 star」的诚实说明，不编造用户量、下载量、运行数字。
+- **1 star 冷启动**：文案里保留「刚发布 / 1 star」的诚实说明，不编造用户量、下载量、运行数字。
 
 ---
 
@@ -18,7 +18,7 @@
 | npm | https://www.npmjs.com/package/dsh-task-suite |
 | 仓库 | https://github.com/qiqll/dsh-task-suite |
 | 介绍页 | https://qiqll.github.io/dsh-task-suite/ |
-| 插件市场 | https://awesome-dsh-plugin.com（分类 `workflow`） |
+| 插件市场 | https://awesome-dsh-plugin.com（分类 `workflow`）· https://go.dshtui.com/p/dsh-task-suite（DSH Go，2026-11-27 收录） |
 | 安装 | `dsh plugin --profile desktop add dsh-task-suite`（Web 版 `--profile web`） |
 | 面板 | 只读；依赖 `dsh-better-sidebar`；首次装完需**完整退出并重开 DSH** |
 | 基线 | git 可选；无仓库时用文件快照，验收口径不变 |
@@ -26,7 +26,7 @@
 | 完成态 | 「待验证」→ 人确认后才归档（不是自动上线） |
 | 运行方式 | 同一时刻只跑一个 worker（串行），不宣传并行团队 |
 | 社区 | Discord https://discord.gg/4MrtZUhpxg · 反馈入口 https://github.com/deepseek-ai/deepseek-harness/discussions |
-| 冷启动 | GitHub star = 0（发帖当天自行核对一次，别引用旧数） |
+| 冷启动 | GitHub star = 1（发帖当天自行核对一次，别引用旧数） |
 
 > 文案里凡是出现「四道关」，顺序固定为 **nonce → 提交归属 → 基线比对 → 改弱审计**。
 > 凡是出现安装命令，写全 `--profile desktop`，不要缩写成 `dsh plugin add`。
@@ -90,7 +90,7 @@
 - [ ] 只发 1 张图（`dashboard-running.png`），不连发多条。
 - [ ] 正文里的链接带 `utm_source=discord&utm_medium=post`。
 - [ ] 没有 @ 任何人；没有 `@everyone` / `@here`。
-- [ ] 保留 0 star 那句，不删。
+- [ ] 保留 1 star 那句，不删。
 - [ ] 发完 24 小时内回一次评论；有人问安装失败，先要 `dsh --version` 和 profile 名。
 
 ### GitHub Discussions
@@ -107,7 +107,7 @@
 - [ ] 节点「分享创造」，标题以 `[开源]` 开头。
 - [ ] 正文是纯文本可读：命令单独一行，链接不要藏在 Markdown 语法里。
 - [ ] 两张图 + GIF 已上图床，正文贴直链；GIF 控制在 8 MB 内。
-- [ ] 正文里 0 star 与「刚发 1.2.0」保留。
+- [ ] 正文里 1 star 与「刚发 1.2.0」保留。
 - [ ] 结尾只问一个问题；不写「求 star / 求支持」。
 - [ ] 发完不自己顶帖；有人问才回。
 

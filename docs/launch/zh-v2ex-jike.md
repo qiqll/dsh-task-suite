@@ -23,7 +23,7 @@
 - 配图 / GIF：
   - `[截图占位：docs/screenshots/dashboard-running.png —— 面板显示当前任务、worker、指标、事件流]`
   - `[截图占位：docs/screenshots/pipeline-overview.png —— 主 Agent → 后台 worker → 机器验收]`
-  - `[GIF 占位：docs/screenshots/dashboard.gif（待录，45–60 秒；见 docs/screenshots/README.md）]`
+  - `[GIF 可选：docs/screenshots/dashboard.gif 尚未录制；不发也能发帖，别放破图占位]`
   - V2EX 插图要先传到图床（sm.ms / 自建），正文里贴图床直链；本地路径贴上去别人看不到。
 - UTM：`?utm_source=v2ex&utm_medium=post`
 
@@ -43,6 +43,7 @@
 
 git 不是必需：普通目录自动走文件快照，四道关一样跑。不 push，不碰 main。
 
+已收录进 DSH Go 市场（go.dshtui.com/p/dsh-task-suite）和 awesome-dsh-plugin。
 安装：
 dsh plugin --profile desktop add dsh-task-suite
 
@@ -83,6 +84,7 @@ git 不是必需，普通目录走文件快照。不 push，不碰 main。右侧
 
 刚发 1.1.1，star 还是 0。冷启动期，欢迎拍砖。
 
+已收录进 DSH Go 市场（go.dshtui.com/p/dsh-task-suite）和 awesome-dsh-plugin。
 安装：
 dsh plugin --profile desktop add dsh-task-suite
 
@@ -106,6 +108,6 @@ https://qiqll.github.io/dsh-task-suite/?utm_source=jike&utm_medium=post
 - [ ] 四道关顺序正确：nonce → 提交归属 → 基线比对 → 改弱审计。
 - [ ] 完成态写的是「待验证」，不是「已完成 / 自动上线」。
 - [ ] 没有「最强」「第一」「唯一」「彻底解决」这类词。
-- [ ] 0 star 的冷启动事实保留，没有编造用户数、下载量、运行数字。
+- [ ] 1 star 的冷启动事实保留，没有编造用户数、下载量、运行数字。
 - [ ] 截图 / GIF 已上传图床（或已确认 V2EX 支持直传），正文里没有本地绝对路径。
 - [ ] 两个链接带 UTM 且可打开。
