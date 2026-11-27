@@ -121,7 +121,10 @@ Data comes from a read-only endpoint the plugin registers: `GET /dsh-task-suite/
 
 ## Plugin market
 
-Listed in [awesome-dsh-plugin](https://awesome-dsh-plugin.com) (category `workflow`, source in [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)); cards, installs, and updates are driven by that directory and npm versions.
+| Directory | Where | Notes |
+|---|---|---|
+| [awesome-dsh-plugin](https://awesome-dsh-plugin.com) | category `workflow` | cards, installs, and updates are driven by that directory and npm versions |
+| [DSH Go](https://go.dshtui.com/p/dsh-task-suite) | `plugins/dsh-task-suite.json`, merged 2026-11-27 | entry pinned to the exact npm version; index rebuilt from the market repo |
 
 The App Store–style screenshots on the detail page come from [`screenshots.json`](screenshots.json) at the repo root: four images (panel overview, running, pending verification, pipeline diagram) stored in [`docs/screenshots/`](docs/screenshots/). Changing a screenshot only needs an edit to that JSON — no new release.
 

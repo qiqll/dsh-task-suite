@@ -121,7 +121,10 @@ UI 依赖 [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar)�
 
 ## 插件市场
 
-本插件已收录进 [awesome-dsh-plugin](https://awesome-dsh-plugin.com)（分类 `workflow`，源码目录见 [GitHub](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)）；市场卡片、安装与更新由该目录和 npm 版本驱动。
+| 目录 | 位置 | 说明 |
+|---|---|---|
+| [awesome-dsh-plugin](https://awesome-dsh-plugin.com) | 分类 `workflow` | 卡片、安装与更新由该目录和 npm 版本驱动 |
+| [DSH Go](https://go.dshtui.com/p/dsh-task-suite) | `plugins/dsh-task-suite.json`，2026-11-27 合并 | 条目锁定精确 npm 版本；索引由市场仓库重建 |
 
 详情页的 AppStore 风格截图来自仓库根目录的 [`screenshots.json`](screenshots.json)，共 4 张（面板总览、运行中、待验证、流程示意），文件在 [`docs/screenshots/`](docs/screenshots/)。改图只需改这个 JSON，不必重新发版。
 
