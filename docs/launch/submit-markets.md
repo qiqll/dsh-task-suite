@@ -53,6 +53,10 @@ curl -s https://raw.githubusercontent.com/omdsh-dev/dsh-hub-workshop/main/intake
 
 **PR 标题**：`Add dsh-task-suite 1.2.0`
 
+**一键建 PR**（对比页已确认是 1 commit / 1 file）：https://github.com/ccch1mneyyy/dsh-go-market/compare/main...qiqll:main?expand=1
+
+**正文**：复制 [`pr-dsh-go-body.md`](../submissions/pr-dsh-go-body.md)，或 `gh pr create --repo ccch1mneyyy/dsh-go-market --base main --head qiqll:main --title "Add dsh-task-suite 1.2.0" --body-file docs/submissions/pr-dsh-go-body.md`
+
 **PR 正文**（可直接用）：
 
 ```markdown

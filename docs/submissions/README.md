@@ -6,6 +6,7 @@
 |---|---|---|
 | `omdsh-submission.json` | OMDSH Hub 的「Author Studio manifest」 textarea | [submit-markets.md §1](../launch/submit-markets.md#1-omdsh-hub唯一需要人工审核--签名-registry-的市场) |
 | `dsh-go-plugin.json` | DSH Go 市场的 `plugins/dsh-task-suite.json` | [submit-markets.md §2](../launch/submit-markets.md#2-dsh-go-市场一条-json-的-pr) |
+| `pr-dsh-go.md` / `pr-dsh-go-body.md` | DSH Go 的 PR 标题+正文（后者是纯正文，供 `gh --body-file`） | [submit-markets.md §2](../launch/submit-markets.md#2-dsh-go-市场一条-json-的-pr) |
 | `issue-hrhgit.md` | hrhgit 目录的 issue 标题 + 正文 | [submit-markets.md §3](../launch/submit-markets.md#3-hrhgit-目录请求重扫) |
 | `issue-dshget.md` | DSH Get 的 issue 标题 + 正文 | [submit-markets.md §4](../launch/submit-markets.md#4-dsh-get补录--修-sitemap) |
 
